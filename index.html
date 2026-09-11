@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paperera — School Websites, Run Properly</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container bar">
+    <a class="brand" href="#">
+      <span class="logo-mark">p<span>.</span></span>
+      <span class="tagline">school websites, run properly</span>
+    </a>
+    <nav class="top-nav">
+      <a href="#domain">Domain</a>
+      <a href="#papers">AI Papers</a>
+      <a href="#services">Monthly Services</a>
+      <a href="#siteinfo">Site Info</a>
+      <a href="#pay">Pay</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="hero">
+  <div class="container">
+    <div>
+      <h1>One register for everything your school's website needs.</h1>
+      <p class="lede">Register a domain, generate exam papers with AI, and keep notices, events and the gallery
+      up to date — fill the forms below, review the total, and pay by UPI. Every entry reaches our team the
+      moment you submit it.</p>
+    </div>
+    <div class="register">
+      <h4>Quick pricing</h4>
+      <dl>
+        <dt>Domain setup</dt><dd>from <span id="heroDomainFrom">₹599</span></dd>
+        <dt>AI paper bundle</dt><dd><span id="heroPaperRate">₹500</span> / <span id="heroPaperRange">50–60 papers</span></dd>
+        <dt>Any site update</dt><dd><span id="heroServiceRate">₹500</span>/mo</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 01 DOMAIN ═══════════ -->
+<section class="block" id="domain">
+  <div class="container">
+    <div class="block-head">
+      <span class="no">01 — Domain</span>
+      <h2>Get your school a domain name</h2>
+      <p>Tell us the school and we'll register the extension you choose. Price depends on the domain type.</p>
+    </div>
+    <form class="card" id="domainForm" autocomplete="off">
+      <div class="grid-3">
+        <div class="field">
+          <label for="dSchool">School name</label>
+          <input type="text" id="dSchool" required placeholder="e.g. Sunrise Public School">
+        </div>
+        <div class="field">
+          <label for="dPlace">Place / city</label>
+          <input type="text" id="dPlace" required placeholder="e.g. Agra, UP">
+        </div>
+        <div class="field">
+          <label for="dContact">Contact number</label>
+          <input type="tel" id="dContact" required pattern="[0-9+ ]{8,15}" placeholder="10-digit mobile number">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="dExt">Domain extension</label>
+          <select id="dExt"></select>
+        </div>
+        <div class="field">
+          <label for="dWanted">Preferred domain name</label>
+          <input type="text" id="dWanted" placeholder="e.g. sunrisepublicschool">
+        </div>
+      </div>
+      <div class="result" id="domainResult" style="display:none;">
+        <span class="big" id="domainPriceOut">₹0</span> one-time registration for
+        <strong id="domainNameOut"></strong>
+      </div>
+      <button type="submit">Check price &amp; add to order →</button>
+      <div class="msg" id="domainMsg"></div>
+    </form>
+  </div>
+</section>
+
+<!-- ═══════════ 02 AI PAPERS ═══════════ -->
+<section class="block" id="papers">
+  <div class="container">
+    <div class="block-head">
+      <span class="no">02 — AI paper generator</span>
+      <h2>Work out how many papers your budget buys</h2>
+      <p>Every ₹500 generates 50–60 question papers. Enter any amount and we'll calculate the range.</p>
+    </div>
+    <form class="card" id="paperForm" autocomplete="off">
+      <div class="grid-3">
+        <div class="field">
+          <label for="pSchool">School name</label>
+          <input type="text" id="pSchool" required placeholder="e.g. Sunrise Public School">
+        </div>
+        <div class="field">
+          <label for="pContact">Contact number</label>
+          <input type="tel" id="pContact" required pattern="[0-9+ ]{8,15}" placeholder="10-digit mobile number">
+        </div>
+        <div class="field">
+          <label for="pAmount">Amount you want to spend (₹)</label>
+          <input type="number" id="pAmount" min="1" step="1" required placeholder="e.g. 2500">
+          <span class="hint" id="paperRateHint"></span>
+        </div>
+      </div>
+      <div class="result" id="paperResult" style="display:none;"></div>
+      <button type="submit">Calculate &amp; add to order →</button>
+      <div class="msg" id="paperMsg"></div>
+    </form>
+  </div>
+</section>
+
+<!-- ═══════════ 03 MONTHLY SERVICES ═══════════ -->
+<section class="block" id="services">
+  <div class="container">
+    <div class="block-head">
+      <span class="no">03 — Monthly site usage</span>
+      <h2>Pick what you need updated</h2>
+      <p>All services together cost <strong id="svcMonthlyLabel">₹500/month</strong>. Select which sections to update, then choose how many months.</p>
+    </div>
+    <form class="card" id="servicesForm" autocomplete="off">
+      <div class="grid-3">
+        <div class="field">
+          <label for="sSchool">School name</label>
+          <input type="text" id="sSchool" required placeholder="e.g. Sunrise Public School">
+        </div>
+        <div class="field">
+          <label for="sPlace">Place / city</label>
+          <input type="text" id="sPlace" required placeholder="e.g. Agra, UP">
+        </div>
+        <div class="field">
+          <label for="sContact">Contact number</label>
+          <input type="tel" id="sContact" required pattern="[0-9+ ]{8,15}" placeholder="10-digit mobile number">
+        </div>
+      </div>
+      <fieldset>
+        <legend>Services required this month</legend>
+        <div id="serviceList"></div>
+      </fieldset>
+      <div class="field" style="max-width:260px;">
+        <label for="sMonths">How many months?</label>
+        <select id="sMonths">
+          <option value="1">1 month</option>
+          <option value="2">2 months</option>
+          <option value="3">3 months</option>
+          <option value="4">4 months</option>
+          <option value="5">5 months</option>
+          <option value="6">6 months</option>
+          <option value="7">7 months</option>
+          <option value="8">8 months</option>
+          <option value="9">9 months</option>
+          <option value="10">10 months</option>
+          <option value="11">11 months</option>
+          <option value="12">12 months</option>
+        </select>
+      </div>
+      <div class="result" id="servicesResult" style="display:none;"></div>
+      <button type="submit">Add to order →</button>
+      <div class="msg" id="serviceMsg"></div>
+    </form>
+  </div>
+</section>
+
+<!-- ═══════════ 04 SITE INFO ═══════════ -->
+<section class="block" id="siteinfo">
+  <div class="container">
+    <div class="block-head">
+      <span class="no">04 — Site info &amp; file changes</span>
+      <h2>Send us the details or files to update</h2>
+      <p>Use this for notices, event details, photos or any change text. If you want this billed, also tick
+      "Site info change" in the services above.</p>
+    </div>
+    <form class="card" id="infoForm" autocomplete="off">
+      <div class="grid-3">
+        <div class="field">
+          <label for="iSchool">School name</label>
+          <input type="text" id="iSchool" required placeholder="e.g. Sunrise Public School">
+        </div>
+        <div class="field">
+          <label for="iPlace">Place / city</label>
+          <input type="text" id="iPlace" required placeholder="e.g. Agra, UP">
+        </div>
+        <div class="field">
+          <label for="iContact">Contact number</label>
+          <input type="tel" id="iContact" required pattern="[0-9+ ]{8,15}" placeholder="10-digit mobile number">
+        </div>
+      </div>
+      <div class="field">
+        <label for="iNotes">What should change?</label>
+        <textarea id="iNotes" placeholder="e.g. Update holiday notice, add annual day photos, change front office number..."></textarea>
+      </div>
+      <div class="field">
+        <label for="iFile">Attach a file (optional, under 3&nbsp;MB — image or PDF)</label>
+        <input type="file" id="iFile" accept="image/*,.pdf">
+        <span class="hint">Larger files: please share via WhatsApp after submitting this form.</span>
+      </div>
+      <button type="submit">Send to site team →</button>
+      <div class="msg" id="infoMsg"></div>
+    </form>
+  </div>
+</section>
+
+<!-- ═══════════ 05 PAY ═══════════ -->
+<section class="block" id="pay" style="border-bottom:none;">
+  <div class="container">
+    <div class="block-head">
+      <span class="no">05 — Review &amp; pay</span>
+      <h2>Your order total</h2>
+      <p>Everything you added above is listed here. Scan the QR or tap the UPI button — the amount is filled
+      in automatically.</p>
+    </div>
+    <div class="pay-wrap">
+      <div class="card">
+        <ul class="cart-list" id="cartList">
+          <li class="empty-row"><em>Nothing added yet — fill a form above first.</em></li>
+        </ul>
+        <div class="result">
+          Total due: <span class="big" id="cartTotalOut">₹0</span>
+        </div>
+        <div class="grid-2" style="margin-top:18px;">
+          <div class="field">
+            <label for="payName">Your name</label>
+            <input type="text" id="payName" placeholder="School / contact person">
+          </div>
+          <div class="field">
+            <label for="payContact">Contact number</label>
+            <input type="tel" id="payContact" placeholder="10-digit mobile number">
+          </div>
+        </div>
+        <button id="confirmPaidBtn" class="gold" style="width:100%;justify-content:center;">
+          ✓ I've paid — notify the team
+        </button>
+        <div class="msg" id="payMsg"></div>
+      </div>
+
+      <div class="qr-box">
+        <div id="qrImageWrap"><p class="hint">Loading payment QR…</p></div>
+        <div class="amt" id="qrAmountOut">₹0</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;">
+          <span class="upi" id="qrUpiOut">UPI ID not set</span>
+          <button type="button" id="copyUpiBtn" class="secondary sm" style="display:none;padding:3px 8px;font-size:0.75rem;">Copy</button>
+        </div>
+        <p style="margin-top:16px;">
+          <a class="btn gold" id="upiPayBtn" href="#" style="width:100%;justify-content:center;">Open UPI app to pay</a>
+        </p>
+        <p class="hint" id="upiHintText">
+          Tap <strong>Open UPI app</strong> on mobile (GPay, PhonePe, Paytm). On a computer, scan the QR code using your phone's camera or UPI app.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ STICKY CART BAR ═══════════ -->
+<div class="cart-bar" id="cartBar" style="display:none;">
+  <div class="container">
+    <div class="items" id="cartBarItems">No items added yet</div>
+    <div class="total">Total: <span id="cartBarTotal">₹0</span></div>
+    <a href="#pay" class="btn gold">Review &amp; pay →</a>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container">
+    <strong>Paperera</strong> — school website &amp; services desk
+    &nbsp;·&nbsp; <a href="admin.html">Admin login</a>
+  </div>
+</footer>
+
+<script src="storage.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

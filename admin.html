@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paperera — Admin</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="admin">
+
+<!-- ══════════════════════════════════
+     LOGIN
+══════════════════════════════════ -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <span class="logo-mark" style="font-size:2.4rem;">p<span>.</span></span>
+    </div>
+    <h1>Admin login</h1>
+    <p>Enter the admin password to open the panel.</p>
+    <div class="field">
+      <label for="pwInput">Password</label>
+      <input type="password" id="pwInput" placeholder="Enter password" autocomplete="off">
+    </div>
+    <button id="loginBtn" style="width:100%;justify-content:center;">Log in →</button>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     ADMIN SHELL
+══════════════════════════════════ -->
+<div class="admin-shell" id="adminShell">
+
+  <!-- Top bar -->
+  <div class="admin-top">
+    <div class="brand-area">
+      <span class="logo-mark">p<span>.</span></span>
+      <span class="sub">Admin panel</span>
+    </div>
+    <div class="actions">
+      <button id="refreshBtn">↻ Refresh</button>
+      <button id="logoutBtn">Log out</button>
+    </div>
+  </div>
+
+  <!-- Tabs (only 2) -->
+  <div class="admin-tabs" id="adminTabs">
+    <button data-tab="overview" class="active">Overview</button>
+    <button data-tab="settings">Settings</button>
+  </div>
+
+  <div class="admin-panel">
+
+    <!-- ══════ OVERVIEW TAB ══════ -->
+    <div class="tab-view active" id="tab-overview">
+
+      <!-- Stat cards -->
+      <div class="stat-grid">
+        <div class="stat-card highlight">
+          <div class="label">Confirmed earnings</div>
+          <div class="value" id="statPaid">₹0</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Pending payments</div>
+          <div class="value" id="statPending">₹0</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Total submissions</div>
+          <div class="value" id="statLeads">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Payment requests</div>
+          <div class="value" id="statPayCount">0</div>
+        </div>
+      </div>
+
+      <!-- Header + view switcher + download button -->
+      <div class="overview-head">
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <h3>Submissions</h3>
+          <div class="view-switcher" id="viewSwitcher">
+            <button class="active" data-view="grouped">🏫 Grouped by School</button>
+            <button data-view="feed">📋 All Submissions</button>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div class="filter-pills" id="filterPills" style="display:none;">
+            <button class="active" data-filter="all">All</button>
+            <button data-filter="domain">Domain</button>
+            <button data-filter="paper">AI Papers</button>
+            <button data-filter="service">Services</button>
+            <button data-filter="siteinfo_upload">Site Info</button>
+            <button data-filter="payment">Payments</button>
+          </div>
+          <button class="gold sm" id="downloadCsvBtn">📥 Download CSV</button>
+          <button class="overview-refresh secondary sm" id="refreshBtn2" title="Refresh">↻</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="overviewTable">
+          <thead id="overviewHead">
+            <tr>
+              <th style="width:50px;">Sr No.</th>
+              <th>School Name</th>
+              <th>City / Place</th>
+              <th>Contact</th>
+              <th>All Requests &amp; Services</th>
+              <th>Total Amount</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="overviewBody"></tbody>
+        </table>
+      </div>
+    </div><!-- /tab-overview -->
+
+    <!-- ══════ SETTINGS TAB ══════ -->
+    <div class="tab-view" id="tab-settings">
+      <div class="settings-sections">
+
+        <!-- Payment card -->
+        <div class="settings-card">
+          <h4><span class="icon">💳</span> Payment details</h4>
+          <div class="settings-inner">
+            <div>
+              <div class="field">
+                <label for="setUpi">UPI ID</label>
+                <input type="text" id="setUpi" placeholder="yourname@upi">
+              </div>
+              <div class="field">
+                <label for="setPayee">Payee name (shown in UPI app)</label>
+                <input type="text" id="setPayee" placeholder="Paperera">
+              </div>
+            </div>
+            <div>
+              <div class="field">
+                <label for="setQr">UPI QR code image</label>
+                <input type="file" id="setQr" accept="image/*">
+                <div id="qrPreviewWrap"></div>
+              </div>
+            </div>
+          </div>
+          <button id="savePaymentBtn">Save payment details</button>
+          <div class="msg" id="paymentSettingsMsg"></div>
+        </div>
+
+        <!-- Domain prices card -->
+        <div class="settings-card">
+          <h4><span class="icon">🌐</span> Domain prices (₹)</h4>
+          <div class="domain-price-grid" id="domainPriceFields"></div>
+          <button id="saveDomainBtn" style="margin-top:16px;">Save domain prices</button>
+          <div class="msg" id="domainPriceMsg"></div>
+        </div>
+
+        <!-- AI paper rate card -->
+        <div class="settings-card">
+          <h4><span class="icon">📄</span> AI paper generator rate</h4>
+          <div class="grid-3" style="max-width:480px;">
+            <div class="field">
+              <label>Price per bundle (₹)</label>
+              <input type="number" id="setPaperPrice" min="1">
+            </div>
+            <div class="field">
+              <label>Min papers</label>
+              <input type="number" id="setPaperMin" min="1">
+            </div>
+            <div class="field">
+              <label>Max papers</label>
+              <input type="number" id="setPaperMax" min="1">
+            </div>
+          </div>
+          <button id="savePaperBtn">Save paper rate</button>
+          <div class="msg" id="paperRateMsg"></div>
+        </div>
+
+        <!-- Monthly services card -->
+        <div class="settings-card">
+          <h4><span class="icon">⚙️</span> Monthly site usage rate</h4>
+          <p style="font-size:.88rem;color:var(--ink-soft);margin-bottom:14px;">
+            Flat monthly fee for all site update features combined.
+          </p>
+          <div class="field" style="max-width:280px;">
+            <label for="setMonthlyRate">Monthly fee for all features (₹/month)</label>
+            <input type="number" id="setMonthlyRate" min="1" placeholder="500">
+          </div>
+          <button id="saveServicesBtn" style="margin-top:10px;">Save monthly rate</button>
+          <div class="msg" id="servicesMsg"></div>
+        </div>
+
+        <!-- Supabase card -->
+        <div class="settings-card">
+          <h4><span class="icon">☁️</span> Supabase (optional cloud backend)</h4>
+          <p style="font-size:.88rem;color:var(--ink-soft);margin-bottom:18px;">
+            When configured, all orders are also synced to your Supabase project so they persist
+            across devices and browsers. Leave blank to use local storage only.
+          </p>
+          <div class="settings-inner">
+            <div class="field">
+              <label for="setSupaUrl">Supabase project URL</label>
+              <input type="url" id="setSupaUrl" placeholder="https://xxxx.supabase.co">
+            </div>
+            <div class="field">
+              <label for="setSupaKey">Supabase anon key</label>
+              <input type="text" id="setSupaKey" placeholder="eyJhbGci...">
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
+            <button id="saveSupaBtn">Save Supabase config</button>
+            <button id="testSupaBtn" class="secondary">Test connection</button>
+          </div>
+          <div class="supa-status" id="supaStatus"></div>
+          <div class="msg" id="supaMsg"></div>
+        </div>
+
+      </div><!-- /settings-sections -->
+    </div><!-- /tab-settings -->
+
+  </div><!-- /admin-panel -->
+</div><!-- /admin-shell -->
+
+<script src="storage.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
