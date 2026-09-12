@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paperera — School Websites &amp; Services Desk</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container bar">
+    <a class="brand" href="#">
+      <span class="logo-mark">p<span>.</span></span>
+      <span class="tagline">school websites, run properly</span>
+    </a>
+    <nav class="top-nav">
+      <a href="#school-info">School Info</a>
+      <a href="#domain">Domain</a>
+      <a href="#papers">AI Papers</a>
+      <a href="#services">Monthly Upkeep</a>
+      <a href="#order-summary">Pay &amp; Summary</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="hero">
+  <div class="container">
+    <div>
+      <h1>One register for everything your school's website needs.</h1>
+      <p class="lede">Register a domain, generate question papers with AI, and keep notices, events, and galleries updated. Fill your school details once, choose your services, and pay easily via UPI.</p>
+    </div>
+    <div class="register">
+      <h4>Transparent Pricing</h4>
+      <dl>
+        <dt>Domain registration</dt><dd>from <span id="heroDomainFrom">₹599</span></dd>
+        <dt>AI paper bundle</dt><dd><span id="heroPaperRate">₹500</span> / <span id="heroPaperRange">50–60 papers</span></dd>
+        <dt>All site updates</dt><dd><span id="heroServiceRate">₹500</span>/month</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<main class="container" style="padding-top: 36px; padding-bottom: 60px;">
+
+  <!-- ═══════════ 01 COMPULSORY SCHOOL DETAILS (SINGLE BOX) ═══════════ -->
+  <section class="block" id="school-info" style="padding-top: 0;">
+    <div class="block-head">
+      <span class="no">01 — School &amp; Contact Details</span>
+      <h2>Tell us about your school</h2>
+      <p>Enter your details once here. All selected services and updates will be registered under this profile.</p>
+    </div>
+    <div class="card highlight-card">
+      <div class="grid-3">
+        <div class="field">
+          <label for="mainSchool">School Name <span class="req">*</span></label>
+          <input type="text" id="mainSchool" required placeholder="e.g. Sunrise Public School" autocomplete="organization">
+        </div>
+        <div class="field">
+          <label for="mainPlace">Place / City <span class="req">*</span></label>
+          <input type="text" id="mainPlace" required placeholder="e.g. Agra, UP" autocomplete="address-level2">
+        </div>
+        <div class="field">
+          <label for="mainContact">Contact Mobile Number <span class="req">*</span></label>
+          <input type="tel" id="mainContact" required pattern="[0-9+ ]{8,15}" placeholder="10-digit mobile number" autocomplete="tel">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field" style="margin-bottom:0;">
+          <label for="mainPerson">Contact Person Name (Optional)</label>
+          <input type="text" id="mainPerson" placeholder="e.g. Principal / IT Coordinator" autocomplete="name">
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label for="mainEmail">Email Address (Optional)</label>
+          <input type="email" id="mainEmail" placeholder="e.g. contact@sunriseschool.edu.in" autocomplete="email">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ 02 DOMAIN REGISTRATION ═══════════ -->
+  <section class="block" id="domain">
+    <div class="block-head">
+      <span class="no">02 — Domain Setup</span>
+      <h2>Get a custom school domain</h2>
+      <p>Select your extension and preferred name if you need a new domain registered.</p>
+    </div>
+    <div class="card">
+      <div class="service-toggle-bar" id="domainToggleBar">
+        <label>
+          <input type="checkbox" id="chkDomain" style="width:18px;height:18px;">
+          <span>Register a Domain Name for our School</span>
+        </label>
+        <span class="service-price-pill" id="domainPillPrice">from ₹599</span>
+      </div>
+
+      <div class="service-body disabled" id="domainBody">
+        <div class="grid-2">
+          <div class="field">
+            <label for="dExt">Domain Extension</label>
+            <select id="dExt"></select>
+          </div>
+          <div class="field">
+            <label for="dWanted">Preferred Domain Name</label>
+            <input type="text" id="dWanted" placeholder="e.g. sunrisepublicschool">
+          </div>
+        </div>
+        <div class="result" id="domainResult">
+          Selected domain: <strong id="domainNameOut">sunrisepublicschool.in</strong> — <span class="big" id="domainPriceOut">₹599</span> one-time registration
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ 03 AI PAPERS ═══════════ -->
+  <section class="block" id="papers">
+    <div class="block-head">
+      <span class="no">03 — AI Paper Generator</span>
+      <h2>Automated Question Paper Generation</h2>
+      <p>Generate high-quality exam papers with blueprints, solutions, and marking schemes.</p>
+    </div>
+    <div class="card">
+      <div class="service-toggle-bar" id="paperToggleBar">
+        <label>
+          <input type="checkbox" id="chkPaper" style="width:18px;height:18px;">
+          <span>Order AI Question Papers Bundle</span>
+        </label>
+        <span class="service-price-pill" id="paperPillPrice">₹500 / 50–60 papers</span>
+      </div>
+
+      <div class="service-body disabled" id="paperBody">
+        <div class="field" style="max-width:320px;">
+          <label for="pAmount">Budget / Amount (₹)</label>
+          <input type="number" id="pAmount" min="500" step="500" value="500" placeholder="e.g. 1500">
+          <span class="hint" id="paperRateHint">Rate: ₹500 = 50–60 question papers</span>
+        </div>
+        <div class="result" id="paperResult">
+          Budget: <span class="big" id="paperAmtOut">₹500</span> gets approximately <strong id="paperCountOut">50–60 papers</strong> generated.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ 04 MONTHLY SITE USAGE ═══════════ -->
+  <section class="block" id="services">
+    <div class="block-head">
+      <span class="no">04 — Monthly Site Upkeep</span>
+      <h2>Complete Website Upkeep &amp; Management</h2>
+      <p>All site update features are included under one flat monthly fee. Choose what you need updated and select duration.</p>
+    </div>
+    <div class="card">
+      <div class="service-toggle-bar" id="serviceToggleBar">
+        <label>
+          <input type="checkbox" id="chkServices" style="width:18px;height:18px;">
+          <span>Include Website Upkeep &amp; Updates</span>
+        </label>
+        <span class="service-price-pill" id="servicePillPrice">₹500/month</span>
+      </div>
+
+      <div class="service-body disabled" id="servicesBody">
+        <div class="field" style="max-width:280px; margin-bottom:18px;">
+          <label for="sMonths">How many months?</label>
+          <select id="sMonths">
+            <option value="1">1 month (₹500)</option>
+            <option value="2">2 months (₹1,000)</option>
+            <option value="3" selected>3 months (₹1,500)</option>
+            <option value="6">6 months (₹3,000)</option>
+            <option value="12">12 months (1 Year) (₹6,000)</option>
+          </select>
+        </div>
+
+        <fieldset>
+          <legend>Select features needed</legend>
+          <div class="services-checklist" id="servicesChecklist"></div>
+        </fieldset>
+
+        <div class="result" id="servicesResult">
+          Duration: <strong id="serviceMonthsOut">3 months</strong> — Total: <span class="big" id="servicesPriceOut">₹1,500</span> (All selected features included)
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ 05 SITE NOTES & FILE ═══════════ -->
+  <section class="block" id="siteinfo">
+    <div class="block-head">
+      <span class="no">05 — Notes &amp; File Attachment (Optional)</span>
+      <h2>Specific changes or files</h2>
+      <p>Attach any notice PDF, circular, photos, or instructions for our team.</p>
+    </div>
+    <div class="card">
+      <div class="field">
+        <label for="iNotes">What should be updated?</label>
+        <textarea id="iNotes" placeholder="e.g. Upload new fee circular, add annual sports day photos, update principal message..."></textarea>
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label for="iFile">Attach document or image (optional, max 3 MB)</label>
+        <input type="file" id="iFile" accept="image/*,.pdf,.doc,.docx">
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ 06 ORDER SUMMARY & INSTANT PAY ═══════════ -->
+  <section class="block" id="order-summary" style="border-bottom:none;">
+    <div class="order-summary-box">
+      <h3>Order Summary</h3>
+      <ul class="cart-items-list" id="cartItemsList">
+        <li class="empty">No services selected yet. Check items above to build your order.</li>
+      </ul>
+
+      <div class="order-total-row">
+        <div class="lbl">Total Due:</div>
+        <div class="val" id="grandTotalOut">₹0</div>
+      </div>
+
+      <div style="margin-top: 24px;">
+        <button id="payNowBtn" class="btn gold lg" style="width:100%;">
+          ⚡ Proceed to Pay &amp; Confirm Order (<span id="btnPayAmount">₹0</span>) →
+        </button>
+      </div>
+      <div class="msg" id="orderMsg"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══════════ PAYMENT & QR MODAL ═══════════ -->
+<div class="pay-modal-overlay" id="payModalOverlay">
+  <div class="pay-modal">
+    <button class="close-btn" id="closeModalBtn" title="Close">✕</button>
+    <div class="logo-mark" style="font-size:1.8rem; margin-bottom:6px;">p<span>.</span></div>
+    <h3>Payment &amp; Confirmation</h3>
+    <div class="sub-msg">✓ Order registered successfully with Paperera site desk!</div>
+
+    <div class="amt-badge" id="modalAmountOut">₹0</div>
+    <div class="upi-text" id="modalUpiOut">UPI: </div>
+
+    <div class="qr-render-wrap" id="modalQrWrap">
+      <p class="hint">Loading payment QR code…</p>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:10px; margin-top:14px;">
+      <a class="btn gold" id="modalUpiBtn" href="#" style="width:100%;">
+        📱 Open in UPI App (GPay / PhonePe / Paytm)
+      </a>
+      <button class="btn secondary sm" id="modalCopyUpiBtn" style="width:100%;">
+        📋 Copy UPI ID
+      </button>
+    </div>
+
+    <p style="font-size: .78rem; color: var(--ink-muted); margin-top: 14px; margin-bottom: 0;">
+      Scan the QR code with any UPI app on your phone, or tap <strong>Open in UPI App</strong> on mobile devices.
+    </p>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container">
+    <strong>Paperera</strong> — school website &amp; digital services desk &nbsp;·&nbsp;
+    <a href="admin.html">Admin Login</a>
+  </div>
+</footer>
+
+<script src="storage.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
