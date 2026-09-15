@@ -1,224 +1,363 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Paperera — Admin Control Center</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Paperera | Admin Workspace</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body class="admin">
+  <!-- LOGIN VIEW -->
+  <main class="login-wrap" id="loginWrap">
+    <section class="login-card">
+      <div class="login-logo"><span class="logo-mark">p<span>.</span></span></div>
+      <h1>Admin Workspace</h1>
+      <p>Sign in with your Admin ID and password.</p>
+      <div class="field">
+        <label for="adminUsername">Admin ID / Username</label>
+        <input id="adminUsername" type="text" placeholder="e.g. admin" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="adminPassword">Password</label>
+        <input id="adminPassword" type="password" placeholder="••••••••" autocomplete="current-password" required>
+      </div>
+      <button class="gold" id="loginBtn" style="width:100%;">Log in</button>
+      <div class="msg" id="loginMsg" role="alert"></div>
+    </section>
+  </main>
 
-<!-- ══════════════════════════════════
-     LOGIN
-══════════════════════════════════ -->
-<div class="login-wrap" id="loginWrap">
-  <div class="login-card">
-    <div class="login-logo">
-      <span class="logo-mark" style="font-size:2.4rem;">p<span>.</span></span>
-    </div>
-    <h1>Paperera Admin</h1>
-    <p>Enter the admin password to open the control panel.</p>
-    <div class="field">
-      <label for="pwInput">Admin Password</label>
-      <input type="password" id="pwInput" placeholder="Enter password" autocomplete="off">
-    </div>
-    <button id="loginBtn" class="gold" style="width:100%; justify-content:center;">Log in →</button>
-    <div class="msg" id="loginMsg"></div>
-  </div>
-</div>
+  <!-- ADMIN SHELL -->
+  <main class="admin-shell" id="adminShell">
+    <header class="admin-top">
+      <div class="brand-area">
+        <span class="logo-mark">p<span>.</span></span>
+        <span class="sub" id="adminSubtitle">Admin Workspace</span>
+      </div>
+      <div class="actions">
+        <button id="changeAdminPwdBtn">Change Admin Password</button>
+        <button id="refreshBtn">Refresh data</button>
+        <button id="logoutBtn">Log out</button>
+      </div>
+    </header>
 
-<!-- ══════════════════════════════════
-     ADMIN SHELL
-══════════════════════════════════ -->
-<div class="admin-shell" id="adminShell">
-
-  <!-- Top bar -->
-  <div class="admin-top">
-    <div class="brand-area">
-      <span class="logo-mark">p<span>.</span></span>
-      <span class="sub">Admin Control Center</span>
-    </div>
-    <div class="actions">
-      <button id="refreshBtn">↻ Sync &amp; Refresh</button>
-      <button id="logoutBtn">Log out</button>
-    </div>
-  </div>
-
-  <!-- Tabs (Overview & Settings only) -->
-  <div class="admin-tabs" id="adminTabs">
-    <button data-tab="overview" class="active">📊 Overview &amp; Submissions</button>
-    <button data-tab="settings">⚙️ Settings &amp; Pricing</button>
-  </div>
-
-  <div class="admin-panel">
-
-    <!-- ══════ OVERVIEW TAB ══════ -->
-    <div class="tab-view active" id="tab-overview">
-
-      <!-- Stat cards -->
-      <div class="stat-grid">
-        <div class="stat-card highlight">
-          <div class="label">Confirmed Revenue</div>
-          <div class="value" id="statPaid">₹0</div>
-        </div>
-        <div class="stat-card">
-          <div class="label">Pending Payments</div>
-          <div class="value" id="statPending">₹0</div>
-        </div>
-        <div class="stat-card">
-          <div class="label">Total School Leads</div>
-          <div class="value" id="statLeads">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="label">Total Orders</div>
-          <div class="value" id="statPayCount">0</div>
+    <div class="admin-panel">
+      <div class="workspace-intro">
+        <div>
+          <p class="workspace-kicker">Executive &amp; Operations Control</p>
+          <h1>Manage pricing, workers, leads &amp; payouts.</h1>
+          <p>Control live website prices, assign daily &amp; weekly targets to workers, track worker-submitted school leads, and confirm client payments to release worker commissions.</p>
         </div>
       </div>
 
-      <!-- Header + view switcher + download button -->
-      <div class="overview-head">
-        <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-          <h3>School Registrations &amp; Orders</h3>
-          <div class="view-switcher" id="viewSwitcher">
-            <button class="active" data-view="grouped">🏫 Grouped by School</button>
-            <button data-view="feed">📋 All Submissions Feed</button>
+      <nav class="workspace-nav" aria-label="Admin navigation">
+        <a href="#overview">Overview</a>
+        <a href="#inquiriesDesk">Website Inquiries (<span id="navInqCount">0</span>)</a>
+        <a href="#pricingDesk">Live Prices &amp; Commissions</a>
+        <a href="#workersDesk">Workers &amp; Targets</a>
+        <a href="#leadsDesk">School Leads &amp; Payouts</a>
+      </nav>
+
+      <!-- OVERVIEW -->
+      <section class="workspace-section" id="overview">
+        <div class="stat-grid">
+          <div class="stat-card highlight">
+            <div class="label">Confirmed Paid Revenue</div>
+            <div class="value" id="statPaidRev">₹0</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Unpaid / In-Pipeline Leads</div>
+            <div class="value" id="statUnpaidCount">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Active Workers</div>
+            <div class="value" id="statWorkerCount">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Website Inquiries</div>
+            <div class="value" id="statInqCount">0</div>
           </div>
         </div>
-        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-          <div class="filter-pills" id="filterPills" style="display:none;">
-            <button class="active" data-filter="all">All</button>
-            <button data-filter="payment">Payments</button>
-            <button data-filter="domain">Domain</button>
-            <button data-filter="paper">AI Papers</button>
-            <button data-filter="service">Services</button>
+      </section>
+
+      <!-- WEBSITE HOMEPAGE INQUIRIES & CLIENT ORDERS -->
+      <section class="workspace-section" id="inquiriesDesk">
+        <div class="section-heading">
+          <div>
+            <h2>🌐 Website Homepage Inquiries &amp; Orders</h2>
+            <p>Direct orders and trial requests submitted by schools on your public homepage.</p>
           </div>
-          <button class="gold sm" id="downloadCsvBtn">📥 Download CSV (Excel)</button>
-          <button class="secondary sm" id="refreshBtn2" title="Refresh">↻</button>
         </div>
-      </div>
 
-      <div class="table-wrap">
-        <table id="overviewTable">
-          <thead id="overviewHead">
-            <tr>
-              <th style="width:60px; text-align:center;">Sr No.</th>
-              <th>School Name</th>
-              <th>City / Place</th>
-              <th>Contact Number</th>
-              <th>All Requests &amp; Services</th>
-              <th>Total Amount</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="overviewBody"></tbody>
-        </table>
-      </div>
-    </div><!-- /tab-overview -->
+        <section class="settings-card">
+          <h4>Incoming Website Orders &amp; AI Trial Requests</h4>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>School &amp; City</th>
+                  <th>Contact Person &amp; Phone</th>
+                  <th>Requested Services</th>
+                  <th>Total / Payment</th>
+                  <th>Notes / Requirements</th>
+                  <th>Received Date</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="inquiriesTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
 
-    <!-- ══════ SETTINGS TAB ══════ -->
-    <div class="tab-view" id="tab-settings">
-      <div class="settings-sections">
+      <!-- PRICING & SETTINGS -->
+      <section class="workspace-section" id="pricingDesk">
+        <div class="section-heading">
+          <div>
+            <h2>Website Pricing &amp; Commission Rates</h2>
+            <p>Changes saved here update the public home page immediately and set worker payouts upon client payment.</p>
+          </div>
+        </div>
 
-        <!-- Payment details card -->
-        <div class="settings-card">
-          <h4><span class="icon">💳</span> UPI Payment &amp; QR Settings</h4>
-          <div class="grid-2">
-            <div>
+        <div class="grid-2">
+          <!-- Live Website Prices -->
+          <section class="settings-card">
+            <h4>🌐 Domain Extension Pricing</h4>
+            <p style="font-size:0.85rem; color:var(--ink-soft); margin-bottom:12px;">
+              Set individual registration prices for school domain extensions displayed on the homepage:
+            </p>
+            <div class="grid-3" style="gap:10px; margin-bottom:14px;">
               <div class="field">
-                <label for="setUpi">UPI ID (e.g. yourname@upi)</label>
-                <input type="text" id="setUpi" placeholder="e.g. schoolservices@upi">
+                <label for="setDomainIn">.in Price (₹)</label>
+                <input id="setDomainIn" type="number" min="0" step="50" placeholder="599">
               </div>
               <div class="field">
-                <label for="setPayee">Payee Name (displayed in UPI App)</label>
-                <input type="text" id="setPayee" placeholder="Paperera">
+                <label for="setDomainCom">.com Price (₹)</label>
+                <input id="setDomainCom" type="number" min="0" step="50" placeholder="999">
               </div>
-            </div>
-            <div>
               <div class="field">
-                <label for="setQr">Upload Custom UPI QR Image (Optional)</label>
-                <input type="file" id="setQr" accept="image/*">
-                <div id="qrPreviewWrap"></div>
+                <label for="setDomainOrg">.org Price (₹)</label>
+                <input id="setDomainOrg" type="number" min="0" step="50" placeholder="899">
               </div>
             </div>
-          </div>
-          <button id="savePaymentBtn" class="gold">Save Payment Settings</button>
-          <div class="msg" id="paymentSettingsMsg"></div>
-        </div>
+            <div class="grid-2" style="gap:10px;">
+              <div class="field">
+                <label for="setDomainCoin">.co.in Price (₹)</label>
+                <input id="setDomainCoin" type="number" min="0" step="50" placeholder="499">
+              </div>
+              <div class="field">
+                <label for="setDomainEduin">.edu.in Price (₹)</label>
+                <input id="setDomainEduin" type="number" min="0" step="50" placeholder="1199">
+              </div>
+            </div>
 
-        <!-- Domain prices card -->
-        <div class="settings-card">
-          <h4><span class="icon">🌐</span> Domain Extension Pricing (₹)</h4>
-          <div class="domain-price-grid" id="domainPriceFields"></div>
-          <button id="saveDomainBtn" class="secondary" style="margin-top:16px;">Save Domain Prices</button>
-          <div class="msg" id="domainPriceMsg"></div>
-        </div>
-
-        <!-- AI paper rate card -->
-        <div class="settings-card">
-          <h4><span class="icon">📄</span> AI Question Paper Generator Rates</h4>
-          <div class="grid-3" style="max-width:540px;">
-            <div class="field">
-              <label>Rate per bundle (₹)</label>
-              <input type="number" id="setPaperPrice" min="100" step="50">
+            <h4 style="margin-top:18px;">📄 Monthly Upkeep &amp; AI Paper Pricing</h4>
+            <div class="grid-2">
+              <div class="field">
+                <label for="setUpkeepPrice">Monthly Upkeep Rate (₹/mo)</label>
+                <input id="setUpkeepPrice" type="number" min="0" step="50">
+              </div>
+              <div class="field">
+                <label for="setPaperRate">AI Paper Bundle Rate (₹)</label>
+                <input id="setPaperRate" type="number" min="0" step="50">
+              </div>
             </div>
             <div class="field">
-              <label>Min Papers</label>
-              <input type="number" id="setPaperMin" min="1">
+              <label for="setPaperCountText">AI Paper Bundle Label</label>
+              <input id="setPaperCountText" type="text" placeholder="e.g. 50–60 papers">
+            </div>
+
+            <h4 style="margin-top:16px;">🤖 AI Generation Trial Settings</h4>
+            <div class="field">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" id="setTrialEnabled" style="width:18px;height:18px;">
+                <span>Enable "Take Trial for AI Generation" on Home Page</span>
+              </label>
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label for="setTrialPrice">AI Trial Charge (₹) (0 = Free)</label>
+                <input id="setTrialPrice" type="number" min="0" step="10">
+              </div>
+              <div class="field">
+                <label for="setTrialPapers">AI Trial Papers Count</label>
+                <input id="setTrialPapers" type="text" placeholder="e.g. 5 test question papers">
+              </div>
+            </div>
+
+            <button class="gold" id="savePricesBtn">Save Pricing &amp; Trial Settings</button>
+            <div class="msg" id="pricingMsg" role="alert"></div>
+          </section>
+
+          <!-- Worker Commission Rates -->
+          <section class="settings-card">
+            <h4>💰 Worker Fixed Payout per Paid Client Close</h4>
+            <p style="font-size:0.85rem; color:var(--ink-soft); margin-bottom:14px;">
+              When a worker submits a school and Admin marks it as <strong>Paid</strong>, the worker is automatically credited with this fixed commission. If Unpaid, commission is ₹0.
+            </p>
+            <div class="field">
+              <label for="setCommBasic">Basic Site Usage Client Close (₹)</label>
+              <input id="setCommBasic" type="number" min="0" step="10">
+              <span class="hint">Fixed amount worker earns for a closed Basic Website Upkeep client.</span>
             </div>
             <div class="field">
-              <label>Max Papers</label>
-              <input type="number" id="setPaperMax" min="1">
-            </div>
-          </div>
-          <button id="savePaperBtn" class="secondary">Save Paper Rate</button>
-          <div class="msg" id="paperRateMsg"></div>
-        </div>
-
-        <!-- Monthly services rate -->
-        <div class="settings-card">
-          <h4><span class="icon">⚙️</span> Monthly Website Upkeep Rate</h4>
-          <p style="font-size:.88rem; color:var(--ink-soft); margin-bottom:14px;">
-            Flat monthly fee for all website management features combined.
-          </p>
-          <div class="field" style="max-width:280px;">
-            <label for="setMonthlyRate">Monthly Fee (₹/month)</label>
-            <input type="number" id="setMonthlyRate" min="1" placeholder="500">
-          </div>
-          <button id="saveServicesBtn" class="secondary" style="margin-top:8px;">Save Monthly Rate</button>
-          <div class="msg" id="servicesMsg"></div>
-        </div>
-
-        <!-- Supabase Cloud Sync card -->
-        <div class="settings-card">
-          <h4><span class="icon">☁️</span> Supabase Cloud Backend</h4>
-          <p style="font-size:.88rem; color:var(--ink-soft); margin-bottom:16px;">
-            Connected to your Supabase project so all data syncs live across devices and is safe forever in cloud storage.
-          </p>
-          <div class="grid-2">
-            <div class="field">
-              <label for="setSupaUrl">Supabase Project URL</label>
-              <input type="url" id="setSupaUrl" placeholder="https://xxxx.supabase.co">
+              <label for="setCommAi">AI Paper Generation Client Close (₹)</label>
+              <input id="setCommAi" type="number" min="0" step="10">
+              <span class="hint">Fixed amount worker earns for a closed AI Question Paper client.</span>
             </div>
             <div class="field">
-              <label for="setSupaKey">Supabase Anon Public Key</label>
-              <input type="text" id="setSupaKey" placeholder="eyJhbGci...">
+              <label for="setCommBoth">Both / Full Suite Client Close (₹)</label>
+              <input id="setCommBoth" type="number" min="0" step="10">
+              <span class="hint">Fixed amount worker earns when school orders both website &amp; AI papers.</span>
             </div>
+
+            <button class="gold" id="saveCommsBtn">Save Commission Rates</button>
+            <div class="msg" id="commMsg" role="alert"></div>
+          </section>
+        </div>
+      </section>
+
+      <!-- WORKER ACCOUNTS & TARGETS -->
+      <section class="workspace-section" id="workersDesk">
+        <div class="section-heading">
+          <div>
+            <h2>Workers &amp; Targets</h2>
+            <p>Create worker accounts with passwords stored securely in Supabase, set daily &amp; weekly targets, or change passwords anytime.</p>
           </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;">
-            <button id="saveSupaBtn" class="gold">Save Supabase Config</button>
-            <button id="testSupaBtn" class="secondary">Test Connection</button>
-          </div>
-          <div class="msg" id="supaStatusMsg"></div>
         </div>
 
-      </div><!-- /settings-sections -->
-    </div><!-- /tab-settings -->
+        <div class="worker-grid">
+          <!-- Create Worker -->
+          <section class="settings-card">
+            <h4>➕ Create Worker Account</h4>
+            <div class="grid-2">
+              <div class="field">
+                <label for="newWorkerName">Full Name</label>
+                <input id="newWorkerName" placeholder="e.g. Rahul Sharma" required>
+              </div>
+              <div class="field">
+                <label for="newWorkerCode">Worker ID (Custom or Auto)</label>
+                <input id="newWorkerCode" placeholder="e.g. WKR-101 (Leave blank to auto-generate)">
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label for="newWorkerPassword">Worker Password</label>
+                <input id="newWorkerPassword" type="password" placeholder="Min 4 characters" required>
+              </div>
+              <div class="field">
+                <label for="newWorkerRole">Role</label>
+                <select id="newWorkerRole">
+                  <option value="sales">Sales Specialist</option>
+                  <option value="caller">School Caller</option>
+                  <option value="developer">Developer</option>
+                  <option value="designer">Designer</option>
+                  <option value="support">Support</option>
+                </select>
+              </div>
+            </div>
+            <button class="gold" id="createWorkerBtn">Create Worker in Supabase</button>
+            <div class="msg" id="createWorkerMsg" role="alert"></div>
+          </section>
 
-  </div><!-- /admin-panel -->
-</div><!-- /admin-shell -->
+          <!-- Set Daily & Weekly Target -->
+          <section class="settings-card">
+            <h4>🎯 Dispatch Today &amp; Weekly Targets</h4>
+            <div class="field">
+              <label for="targetWorkerSelect">Select Worker</label>
+              <select id="targetWorkerSelect"></select>
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label for="targetDailyCount">Today's Target (Leads)</label>
+                <input id="targetDailyCount" type="number" min="0" placeholder="e.g. 5">
+              </div>
+              <div class="field">
+                <label for="targetDailyAmount">Today's Target Amount (₹)</label>
+                <input id="targetDailyAmount" type="number" min="0" placeholder="e.g. 2500">
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label for="targetWeeklyCount">Weekly Target (Leads)</label>
+                <input id="targetWeeklyCount" type="number" min="0" placeholder="e.g. 25">
+              </div>
+              <div class="field">
+                <label for="targetWeeklyAmount">Weekly Target Amount (₹)</label>
+                <input id="targetWeeklyAmount" type="number" min="0" placeholder="e.g. 12500">
+              </div>
+            </div>
+            <div class="field">
+              <label for="targetNote">Target Instructions / Note</label>
+              <input id="targetNote" placeholder="e.g. Target CBSE high schools in North zone">
+            </div>
+            <button class="gold" id="saveTargetBtn">Send Targets to Worker</button>
+            <div class="msg" id="targetMsg" role="alert"></div>
+          </section>
+        </div>
 
-<script src="storage.js"></script>
-<script src="admin.js"></script>
+        <!-- Worker Roster -->
+        <section class="settings-card">
+          <h4>Active Workers Roster</h4>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Worker Name</th>
+                  <th>Worker ID</th>
+                  <th>Role</th>
+                  <th>Today's Target</th>
+                  <th>Weekly Target</th>
+                  <th>Paid Closes</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="workerTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <!-- CLIENTS, LEADS & PAYOUTS -->
+      <section class="workspace-section" id="leadsDesk">
+        <div class="section-heading">
+          <div>
+            <h2>School Leads &amp; Commission Tracking</h2>
+            <p>See which worker submitted each school. Click <strong>Mark as Paid</strong> to confirm payment and credit the worker's earnings.</p>
+          </div>
+        </div>
+
+        <section class="settings-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+            <h4 style="margin:0; border:none; padding:0;">Submitted Schools &amp; Attribution</h4>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <label for="filterWorkerLeads" style="font-size:0.8rem; font-weight:600;">Filter by Worker:</label>
+              <select id="filterWorkerLeads" style="width:auto; padding:6px 12px;"></select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>School &amp; City</th>
+                  <th>Contact Person &amp; Phone</th>
+                  <th>Service Requested</th>
+                  <th>Submitted By</th>
+                  <th>Payment Status</th>
+                  <th>Worker Payout</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="leadsTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </div>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="storage.js"></script>
+  <script src="admin.js"></script>
 </body>
 </html>
+

@@ -20,6 +20,7 @@
       <a href="#papers">AI Papers</a>
       <a href="#services">Monthly Upkeep</a>
       <a href="#order-summary">Pay &amp; Summary</a>
+      <a href="worker.html">Worker Desk</a>
     </nav>
   </div>
 </header>
@@ -38,6 +39,9 @@
         <dt>AI paper bundle</dt><dd><span id="heroPaperRate">₹500</span> / <span id="heroPaperRange">50–60 papers</span></dd>
         <dt>All site updates</dt><dd><span id="heroServiceRate">₹500</span>/month</dd>
       </dl>
+      <div style="margin-top:18px;">
+        <a href="worker.html" class="btn secondary" style="width:100%; justify-content:center;">Open Worker Workspace</a>
+      </div>
     </div>
   </div>
 </section>
@@ -86,7 +90,7 @@
       <h2>Get a custom school domain</h2>
       <p>Select your extension and preferred name if you need a new domain registered.</p>
     </div>
-    <div class="card">
+    <div class="card" id="domainCard">
       <div class="service-toggle-bar" id="domainToggleBar">
         <label>
           <input type="checkbox" id="chkDomain" style="width:18px;height:18px;">
@@ -100,10 +104,14 @@
           <div class="field">
             <label for="dExt">Domain Extension</label>
             <select id="dExt"></select>
+            <div class="preset-chips" id="domainChips">
+              <!-- Dynamically populated extension chips -->
+            </div>
           </div>
           <div class="field">
             <label for="dWanted">Preferred Domain Name</label>
             <input type="text" id="dWanted" placeholder="e.g. sunrisepublicschool">
+            <span class="hint">Letters, numbers, and hyphens only</span>
           </div>
         </div>
         <div class="result" id="domainResult">
@@ -113,28 +121,61 @@
     </div>
   </section>
 
-  <!-- ═══════════ 03 AI PAPERS ═══════════ -->
+  <!-- ═══════════ 03 AI PAPERS & TRIAL ═══════════ -->
   <section class="block" id="papers">
     <div class="block-head">
       <span class="no">03 — AI Paper Generator</span>
-      <h2>Automated Question Paper Generation</h2>
+      <h2>Automated Question Paper Generation &amp; Trial</h2>
       <p>Generate high-quality exam papers with blueprints, solutions, and marking schemes.</p>
     </div>
-    <div class="card">
+    <div class="card" id="paperCard">
+      <!-- AI Trial Option -->
+      <div class="service-toggle-bar" id="trialToggleBar" style="background:#f1f8f4; border-color:rgba(31,122,77,0.25);">
+        <label>
+          <input type="checkbox" id="chkTrial" style="width:18px;height:18px;">
+          <span>🎯 Take Trial for AI Question Paper Generation</span>
+        </label>
+        <span class="service-price-pill" id="trialPillPrice" style="color:var(--green);">Free Trial</span>
+      </div>
+      <div class="service-body disabled" id="trialBody" style="margin-bottom:20px;">
+        <div class="result" id="trialResult" style="background:var(--green-light); border-color:rgba(31,122,77,0.2);">
+          Selected: <strong id="trialDescOut">5 test question papers generated</strong> — Cost: <span class="big" id="trialCostOut" style="color:var(--green);">₹0</span>
+        </div>
+      </div>
+
+      <!-- AI Full Paper Bundle -->
       <div class="service-toggle-bar" id="paperToggleBar">
         <label>
           <input type="checkbox" id="chkPaper" style="width:18px;height:18px;">
-          <span>Order AI Question Papers Bundle</span>
+          <span>Order Full AI Question Papers Bundle</span>
         </label>
         <span class="service-price-pill" id="paperPillPrice">₹500 / 50–60 papers</span>
       </div>
 
       <div class="service-body disabled" id="paperBody">
-        <div class="field" style="max-width:320px;">
-          <label for="pAmount">Budget / Amount (₹)</label>
-          <input type="number" id="pAmount" min="500" step="500" value="500" placeholder="e.g. 1500">
-          <span class="hint" id="paperRateHint">Rate: ₹500 = 50–60 question papers</span>
+        <label style="font-size:0.88rem; font-weight:600; color:var(--navy-deep); margin-bottom:6px; display:block;">
+          Choose Paper Budget Preset:
+        </label>
+        <div class="preset-chips" id="paperPresets">
+          <button type="button" class="preset-chip active" data-amount="500">₹500 (50–60 papers)</button>
+          <button type="button" class="preset-chip" data-amount="1000">₹1,000 (100–120 papers)</button>
+          <button type="button" class="preset-chip" data-amount="1500">₹1,500 (150–180 papers)</button>
+          <button type="button" class="preset-chip" data-amount="2500">₹2,500 (250–300 papers)</button>
+          <button type="button" class="preset-chip" data-amount="5000">₹5,000 (500–600 papers)</button>
         </div>
+
+        <div class="grid-2" style="margin-top:14px;">
+          <div class="field">
+            <label for="pAmount">Custom Budget / Amount (₹)</label>
+            <div class="stepper-input-wrap">
+              <button type="button" class="stepper-btn" id="btnPaperMinus">−</button>
+              <input type="number" id="pAmount" min="500" step="500" value="500" style="text-align:center;">
+              <button type="button" class="stepper-btn" id="btnPaperPlus">+</button>
+            </div>
+            <span class="hint" id="paperRateHint">Rate: ₹500 = 50–60 question papers</span>
+          </div>
+        </div>
+
         <div class="result" id="paperResult">
           Budget: <span class="big" id="paperAmtOut">₹500</span> gets approximately <strong id="paperCountOut">50–60 papers</strong> generated.
         </div>
@@ -147,9 +188,9 @@
     <div class="block-head">
       <span class="no">04 — Monthly Site Upkeep</span>
       <h2>Complete Website Upkeep &amp; Management</h2>
-      <p>All site update features are included under one flat monthly fee. Choose what you need updated and select duration.</p>
+      <p>All site update features are included under one flat monthly fee. Choose duration and number of websites/branches.</p>
     </div>
-    <div class="card">
+    <div class="card" id="serviceCard">
       <div class="service-toggle-bar" id="serviceToggleBar">
         <label>
           <input type="checkbox" id="chkServices" style="width:18px;height:18px;">
@@ -159,44 +200,70 @@
       </div>
 
       <div class="service-body disabled" id="servicesBody">
-        <div class="field" style="max-width:280px; margin-bottom:18px;">
-          <label for="sMonths">How many months?</label>
-          <select id="sMonths">
-            <option value="1">1 month (₹500)</option>
-            <option value="2">2 months (₹1,000)</option>
-            <option value="3" selected>3 months (₹1,500)</option>
-            <option value="6">6 months (₹3,000)</option>
-            <option value="12">12 months (1 Year) (₹6,000)</option>
-          </select>
+        <label style="font-size:0.88rem; font-weight:600; color:var(--navy-deep); margin-bottom:6px; display:block;">
+          Select Duration Preset:
+        </label>
+        <div class="preset-chips" id="durationChips">
+          <button type="button" class="preset-chip" data-months="1">1 Month</button>
+          <button type="button" class="preset-chip active" data-months="3">3 Months</button>
+          <button type="button" class="preset-chip" data-months="6">6 Months</button>
+          <button type="button" class="preset-chip" data-months="12">12 Months (1 Yr)</button>
+          <button type="button" class="preset-chip" data-months="24">24 Months (2 Yrs)</button>
+          <button type="button" class="preset-chip" data-months="36">36 Months (3 Yrs)</button>
+        </div>
+
+        <div class="grid-2" style="margin-top:14px; margin-bottom:18px;">
+          <div class="field">
+            <label for="sMonths">Number of Months</label>
+            <div class="stepper-input-wrap">
+              <button type="button" class="stepper-btn" id="btnMonthMinus">−</button>
+              <input type="number" id="sMonths" min="1" max="60" value="3" style="text-align:center;">
+              <button type="button" class="stepper-btn" id="btnMonthPlus">+</button>
+            </div>
+            <span class="hint">Choose any custom number of months (1–60)</span>
+          </div>
+
+          <div class="field">
+            <label for="sSites">Number of Websites / School Branches</label>
+            <div class="stepper-input-wrap">
+              <button type="button" class="stepper-btn" id="btnSiteMinus">−</button>
+              <input type="number" id="sSites" min="1" max="20" value="1" style="text-align:center;">
+              <button type="button" class="stepper-btn" id="btnSitePlus">+</button>
+            </div>
+            <span class="hint">1 site by default, or increase for multi-branch schools</span>
+          </div>
         </div>
 
         <fieldset>
-          <legend>Select features needed</legend>
-          <div class="services-checklist" id="servicesChecklist"></div>
+          <legend>Features included in monthly upkeep</legend>
+          <div class="services-checklist" id="servicesChecklist">
+            <label class="check-item"><input type="checkbox" checked> Notice &amp; Circular Updates</label>
+            <label class="check-item"><input type="checkbox" checked> Photo Gallery Uploads</label>
+            <label class="check-item"><input type="checkbox" checked> Teacher &amp; Staff Directory</label>
+            <label class="check-item"><input type="checkbox" checked> Fee Structure &amp; Admissions</label>
+            <label class="check-item"><input type="checkbox" checked> Events &amp; Academic Calendar</label>
+            <label class="check-item"><input type="checkbox" checked> Domain &amp; Hosting Maintenance</label>
+          </div>
         </fieldset>
 
         <div class="result" id="servicesResult">
-          Duration: <strong id="serviceMonthsOut">3 months</strong> — Total: <span class="big" id="servicesPriceOut">₹1,500</span> (All selected features included)
+          Duration: <strong id="serviceMonthsOut">3 months</strong> × <strong id="serviceSitesOut">1 website</strong> — Total: <span class="big" id="servicesPriceOut">₹1,500</span>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ═══════════ 05 SITE NOTES & FILE ═══════════ -->
+  <!-- ═══════════ 05 SPECIFIC REQUIREMENTS & NOTES ═══════════ -->
   <section class="block" id="siteinfo">
     <div class="block-head">
-      <span class="no">05 — Notes &amp; File Attachment (Optional)</span>
-      <h2>Specific changes or files</h2>
-      <p>Attach any notice PDF, circular, photos, or instructions for our team.</p>
+      <span class="no">05 — Requirements &amp; Instructions</span>
+      <h2>Specific changes or requirements</h2>
+      <p>Enter any custom instructions, notices, circular text, or questions for our team.</p>
     </div>
     <div class="card">
-      <div class="field">
-        <label for="iNotes">What should be updated?</label>
-        <textarea id="iNotes" placeholder="e.g. Upload new fee circular, add annual sports day photos, update principal message..."></textarea>
-      </div>
       <div class="field" style="margin-bottom:0;">
-        <label for="iFile">Attach document or image (optional, max 3 MB)</label>
-        <input type="file" id="iFile" accept="image/*,.pdf,.doc,.docx">
+        <label for="iNotes">What should be updated or set up?</label>
+        <textarea id="iNotes" placeholder="e.g. Set up custom domain, upload new fee circular, generate Class 10 CBSE Math question paper bundle..."></textarea>
       </div>
     </div>
   </section>
@@ -262,6 +329,7 @@
   </div>
 </footer>
 
+<script src="config.js"></script>
 <script src="storage.js"></script>
 <script src="app.js"></script>
 </body>

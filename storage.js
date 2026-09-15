@@ -1,251 +1,230 @@
-/* storage.js — Paperera Supabase & Local Data Layer */
+/* Supabase RPC & REST Client for Paperera.
+   All passwords are encrypted with pgcrypto on Supabase.
+   No credentials or business records are cached in browser localStorage. */
 
-const DEFAULT_CONFIG = {
-  domainPrices: {
-    com: 999,
-    in: 599,
-    org: 799,
-    edu: 899,
-    "co.in": 649
-  },
-  paperGen: { pricePerBundle: 500, papersMin: 50, papersMax: 60 },
-  monthlyRate: 500, // Flat monthly rate for all site maintenance
-  services: [
-    { key: "notice", label: "Notice upload" },
-    { key: "event", label: "Event page update" },
-    { key: "contact", label: "Contact details change" },
-    { key: "formbuilding", label: "New form building" },
-    { key: "gallery", label: "Gallery update" },
-    { key: "siteinfo", label: "Site info change" },
-    { key: "inquiry", label: "Inquiry desk handling" },
-    { key: "admission", label: "Admission-apply setup" }
-  ],
-  upiId: "",
-  payeeName: "Paperera",
-  qrImage: "",
-  supabase: {
-    url: "https://itpsqbwkjhmygrnngiil.supabase.co",
-    key: "sb_publishable_SqqK8Gp24MT35SM13J72Gg_utiRV3-i"
+const PAPERERA = window.PAPERERA_CONFIG || {};
+let currentAdmin = null;
+let currentWorker = null;
+
+const cleanUrl = () => (PAPERERA.supabaseUrl || '').replace(/\/$/, '');
+const configured = () => cleanUrl() && PAPERERA.supabaseAnonKey && !PAPERERA.supabaseUrl.includes('YOUR_');
+const money = n => '₹' + (Number(n) || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+
+async function rpc(functionName, params = {}) {
+  if (!configured()) {
+    throw new Error('Supabase is not configured. Please check config.js.');
   }
-};
+  const res = await fetch(`${cleanUrl()}/rest/v1/rpc/${functionName}`, {
+    method: 'POST',
+    headers: {
+      'apikey': PAPERERA.supabaseAnonKey,
+      'Authorization': `Bearer ${PAPERERA.supabaseAnonKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(params)
+  });
 
-/* ─── LocalStorage Helpers ─── */
-function lsGet(key) {
-  try { return localStorage.getItem(key); }
-  catch (e) { return null; }
-}
-
-function lsSet(key, val) {
-  try { localStorage.setItem(key, val); return true; }
-  catch (e) { return false; }
-}
-
-/* ─── Supabase REST Client ─── */
-function cleanSupaUrl(url) {
-  if (!url) return "";
-  return url.trim().replace(/\/+$/, "").replace(/\/rest\/v1\/?$/, "");
-}
-
-async function sbFetch(path, options = {}) {
-  const cfg = await loadConfig();
-  const url = cleanSupaUrl(cfg.supabase?.url);
-  const key = cfg.supabase?.key?.trim();
-
-  if (!url || !key) return null;
-
-  const endpoint = `${url}/rest/v1/${path}`;
-  const headers = {
-    "apikey": key,
-    "Authorization": `Bearer ${key}`,
-    "Content-Type": "application/json",
-    ...(options.headers || {})
-  };
-
-  try {
-    const res = await fetch(endpoint, { ...options, headers });
-    return res;
-  } catch (err) {
-    console.warn("Supabase fetch error:", err);
-    return null;
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    throw new Error(data?.message || data?.hint || `Request failed (${res.status})`);
   }
+  return data;
 }
 
-async function sbGetOrders() {
-  const res = await sbFetch("paperera_orders?select=*&order=timestamp.desc");
-  if (!res || !res.ok) return null;
-  return await res.json();
-}
-
-async function sbInsertOrder(order) {
-  const res = await sbFetch("paperera_orders", {
-    method: "POST",
-    headers: { "Prefer": "return=representation" },
-    body: JSON.stringify(order)
-  });
-  return res && res.ok;
-}
-
-async function sbPatchOrder(id, patch) {
-  const res = await sbFetch(`paperera_orders?id=eq.${encodeURIComponent(id)}`, {
-    method: "PATCH",
-    body: JSON.stringify(patch)
-  });
-  return res && res.ok;
-}
-
-async function sbDeleteOrder(id) {
-  const res = await sbFetch(`paperera_orders?id=eq.${encodeURIComponent(id)}`, {
-    method: "DELETE"
-  });
-  return res && res.ok;
-}
-
-/* ─── Config API ─── */
-async function loadConfig() {
-  const raw = lsGet("paperera_config");
-  let localCfg = DEFAULT_CONFIG;
-  if (raw) {
-    try {
-      const parsed = JSON.parse(raw);
-      localCfg = {
-        ...DEFAULT_CONFIG,
-        ...parsed,
-        supabase: { ...DEFAULT_CONFIG.supabase, ...(parsed.supabase || {}) }
-      };
-    } catch (e) {}
-  } else {
-    lsSet("paperera_config", JSON.stringify(DEFAULT_CONFIG));
+// Authentication RPCs
+async function adminLogin(username, password) {
+  const res = await rpc('admin_login', { p_username: username, p_password: password });
+  if (!res || !res.success) {
+    throw new Error(res?.error || 'Invalid Admin ID or password.');
   }
-
-  // Try fetching remote config from Supabase paperera_kv
-  try {
-    const res = await sbFetch("paperera_kv?key=eq.site_config&select=value");
-    if (res && res.ok) {
-      const rows = await res.json();
-      if (rows && rows.length > 0 && rows[0].value) {
-        const remoteCfg = JSON.parse(rows[0].value);
-        localCfg = {
-          ...localCfg,
-          ...remoteCfg,
-          supabase: { ...localCfg.supabase, ...(remoteCfg.supabase || {}) }
-        };
-        lsSet("paperera_config", JSON.stringify(localCfg));
-      }
-    }
-  } catch (e) {}
-
-  return localCfg;
+  currentAdmin = res.admin;
+  return currentAdmin;
 }
 
-async function saveConfig(cfg) {
-  lsSet("paperera_config", JSON.stringify(cfg));
-  try {
-    await sbFetch("paperera_kv", {
-      method: "POST",
-      headers: { "Prefer": "resolution=merge-duplicates" },
-      body: JSON.stringify({ key: "site_config", value: JSON.stringify(cfg) })
-    });
-  } catch (e) {}
-  return true;
+async function workerLogin(workerCode, password) {
+  const res = await rpc('worker_login', { p_worker_code: workerCode, p_password: password });
+  if (!res || !res.success) {
+    throw new Error(res?.error || 'Invalid Worker ID or password.');
+  }
+  currentWorker = res.worker;
+  return currentWorker;
 }
 
-/* ─── Orders API ─── */
-async function loadOrders() {
-  // Try Supabase first
-  try {
-    const remote = await sbGetOrders();
-    if (remote && Array.isArray(remote)) {
-      lsSet("paperera_orders", JSON.stringify(remote));
-      return remote;
-    }
-  } catch (e) {}
-
-  // Fallback to local storage
-  const raw = lsGet("paperera_orders");
-  try { return raw ? JSON.parse(raw) : []; }
-  catch (e) { return []; }
+function adminLogout() {
+  currentAdmin = null;
 }
 
-function newId() {
-  return "ord_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+function workerLogout() {
+  currentWorker = null;
 }
 
-async function addOrder(order) {
-  order.id = newId();
-  order.timestamp = new Date().toISOString();
-  if (!order.status) order.status = "new";
+// Admin Operations
+async function getAdminData() {
+  return await rpc('get_admin_dashboard');
+}
 
-  // 1. Save in localStorage
-  const list = await loadOrders();
-  list.unshift(order);
-  lsSet("paperera_orders", JSON.stringify(list));
+async function adminCreateWorker({ worker_code, full_name, password, role }) {
+  const res = await rpc('admin_create_worker', {
+    p_worker_code: worker_code,
+    p_full_name: full_name,
+    p_password: password,
+    p_role: role || 'sales'
+  });
+  if (!res || !res.success) {
+    throw new Error(res?.error || 'Failed to create worker.');
+  }
+  return res.worker;
+}
 
-  // 2. Sync to Supabase
+async function adminUpdateWorkerPassword(workerId, newPassword) {
+  const res = await rpc('admin_update_worker_password', {
+    p_worker_id: workerId,
+    p_new_password: newPassword
+  });
+  if (!res || !res.success) {
+    throw new Error(res?.error || 'Failed to update password.');
+  }
+  return res;
+}
+
+async function adminChangeOwnPassword(username, oldPassword, newPassword) {
+  const res = await rpc('admin_change_own_password', {
+    p_username: username,
+    p_old_password: oldPassword,
+    p_new_password: newPassword
+  });
+  if (!res || !res.success) {
+    throw new Error(res?.error || 'Failed to change password.');
+  }
+  return res;
+}
+
+async function adminSetPaymentStatus(clientId, status, amount = 0) {
+  const res = await rpc('admin_set_payment_status', {
+    p_client_id: clientId,
+    p_status: status,
+    p_amount: Number(amount) || 0
+  });
+  if (!res || !res.success) {
+    throw new Error(res?.error || 'Failed to update payment status.');
+  }
+  return res;
+}
+
+async function adminSetInquiryPaymentStatus(inquiryId, status) {
+  const res = await rpc('admin_set_inquiry_payment_status', {
+    p_inquiry_id: inquiryId,
+    p_status: status
+  });
+  if (!res || !res.success) {
+    throw new Error(res?.error || 'Failed to update inquiry payment status.');
+  }
+  return res;
+}
+
+async function adminSetWorkerTarget({ worker_id, daily_target_count, daily_target_amount, weekly_target_count, weekly_target_amount, note }) {
+  const res = await rpc('admin_set_worker_target', {
+    p_worker_id: worker_id,
+    p_daily_count: Number(daily_target_count) || 0,
+    p_daily_amount: Number(daily_target_amount) || 0,
+    p_weekly_count: Number(weekly_target_count) || 0,
+    p_weekly_amount: Number(weekly_target_amount) || 0,
+    p_note: note || ''
+  });
+  if (!res || !res.success) {
+    throw new Error(res?.error || 'Failed to save targets.');
+  }
+  return res;
+}
+
+async function adminUpdateSettings(settings) {
+  const res = await rpc('admin_update_settings', { p_settings: settings });
+  if (!res || !res.success) {
+    throw new Error(res?.error || 'Failed to update settings.');
+  }
+  return res;
+}
+
+async function adminConvertInquiryToClient(inquiryId, workerId = null, serviceType = 'basic_site') {
+  const res = await rpc('admin_convert_inquiry_to_client', {
+    p_inquiry_id: inquiryId,
+    p_worker_id: workerId,
+    p_service_type: serviceType
+  });
+  if (!res || !res.success) {
+    throw new Error(res?.error || 'Failed to convert inquiry.');
+  }
+  return res;
+}
+
+// Worker Operations
+async function getWorkerData(workerId) {
+  return await rpc('get_worker_dashboard', { p_worker_id: workerId });
+}
+
+async function workerSubmitLead({ worker_id, school_name, city, contact_name, contact_phone, contact_email, service_type, notes }) {
+  const res = await rpc('worker_submit_lead', {
+    p_worker_id: worker_id,
+    p_school_name: school_name,
+    p_city: city || '',
+    p_contact_name: contact_name || '',
+    p_contact_phone: contact_phone,
+    p_contact_email: contact_email || '',
+    p_service_type: service_type || 'basic_site',
+    p_notes: notes || ''
+  });
+  if (!res || !res.success) {
+    throw new Error(res?.error || 'Failed to submit lead.');
+  }
+  return res;
+}
+
+// Public Operations (Website Home)
+async function getPublicSettings() {
   try {
-    await sbInsertOrder(order);
+    return await rpc('get_app_settings');
   } catch (e) {
-    console.warn("Could not insert order into Supabase:", e);
+    console.warn('Using default settings fallback:', e);
+    return {
+      domain_base_price: 599,
+      ai_paper_rate: 500,
+      ai_paper_count_text: '50–60 papers',
+      monthly_upkeep_rate: 500,
+      ai_trial_enabled: true,
+      ai_trial_price: 0,
+      ai_trial_papers: '5 test question papers'
+    };
+  }
+}
+
+async function submitInquiry(inquiryData) {
+  if (!configured()) throw new Error('Online requests are not configured.');
+  const request = payload => fetch(`${cleanUrl()}/rest/v1/inquiries`, {
+    method: 'POST',
+    headers: {
+      'apikey': PAPERERA.supabaseAnonKey,
+      'Authorization': `Bearer ${PAPERERA.supabaseAnonKey}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  let res = await request(inquiryData);
+  let data = await res.json().catch(() => null);
+
+  // Keep submissions working until an existing Supabase project runs the total_amount migration.
+  if (!res.ok && ['42703', '42501'].includes(data?.code) && Object.prototype.hasOwnProperty.call(inquiryData, 'total_amount')) {
+    const { total_amount, ...legacyPayload } = inquiryData;
+    res = await request(legacyPayload);
+    data = await res.json().catch(() => null);
   }
 
-  return order;
-}
-
-async function updateOrder(id, patch) {
-  const list = await loadOrders();
-  const idx = list.findIndex(o => o.id === id);
-  if (idx !== -1) {
-    list[idx] = { ...list[idx], ...patch };
-    lsSet("paperera_orders", JSON.stringify(list));
-  }
-  try {
-    await sbPatchOrder(id, patch);
-  } catch (e) {}
-  return list[idx] || null;
-}
-
-async function deleteOrder(id) {
-  const list = await loadOrders();
-  const filtered = list.filter(o => o.id !== id);
-  lsSet("paperera_orders", JSON.stringify(filtered));
-  try {
-    await sbDeleteOrder(id);
-  } catch (e) {}
-  return true;
-}
-
-async function deleteOrders(ids) {
-  const idSet = new Set(ids);
-  const list = await loadOrders();
-  const filtered = list.filter(o => !idSet.has(o.id));
-  lsSet("paperera_orders", JSON.stringify(filtered));
-  for (const id of ids) {
-    try { await sbDeleteOrder(id); } catch (e) {}
-  }
-  return true;
-}
-
-async function testSupabase(url, key) {
-  if (!url || !key) return { ok: false, msg: "URL and Anon Key are required." };
-  const clean = cleanSupaUrl(url);
-  try {
-    const res = await fetch(`${clean}/rest/v1/paperera_orders?select=id&limit=1`, {
-      headers: {
-        "apikey": key.trim(),
-        "Authorization": `Bearer ${key.trim()}`
-      }
-    });
-    if (res.ok || res.status === 200 || res.status === 206) {
-      return { ok: true, msg: "Connected to Supabase successfully ✓" };
+  if (!res.ok) {
+    if (data?.code === '42501') {
+      throw new Error('Homepage orders are temporarily unavailable. Please run the inquiries RLS policy migration in Supabase.');
     }
-    if (res.status === 404 || res.status === 400) {
-      return { ok: true, msg: "Connected to Supabase! (Note: run the SQL schema to create tables)" };
-    }
-    return { ok: false, msg: `HTTP ${res.status} error — check your Anon Key & URL.` };
-  } catch (err) {
-    return { ok: false, msg: "Connection failed: " + err.message };
+    throw new Error(data?.message || 'Could not submit inquiry.');
   }
-}
-
-function money(n) {
-  return "₹" + (Number(n) || 0).toLocaleString("en-IN");
+  return data;
 }

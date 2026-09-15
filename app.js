@@ -1,433 +1,470 @@
-/* app.js — Paperera Public Site Logic */
+/* Paperera Public Home Page: Dynamic pricing, individual domain rates, AI paper trial, order builder & lead submission */
 
-let CONFIG = null;
-
-/* ─── DOM Elements ─── */
-const el = {
-  // School info
-  school: document.getElementById("mainSchool"),
-  place: document.getElementById("mainPlace"),
-  contact: document.getElementById("mainContact"),
-  person: document.getElementById("mainPerson"),
-  email: document.getElementById("mainEmail"),
-
-  // Domain
-  chkDomain: document.getElementById("chkDomain"),
-  domainBody: document.getElementById("domainBody"),
-  dExt: document.getElementById("dExt"),
-  dWanted: document.getElementById("dWanted"),
-  domainNameOut: document.getElementById("domainNameOut"),
-  domainPriceOut: document.getElementById("domainPriceOut"),
-  domainPillPrice: document.getElementById("domainPillPrice"),
-
-  // AI Papers
-  chkPaper: document.getElementById("chkPaper"),
-  paperBody: document.getElementById("paperBody"),
-  pAmount: document.getElementById("pAmount"),
-  paperRateHint: document.getElementById("paperRateHint"),
-  paperAmtOut: document.getElementById("paperAmtOut"),
-  paperCountOut: document.getElementById("paperCountOut"),
-  paperPillPrice: document.getElementById("paperPillPrice"),
-
-  // Monthly Services
-  chkServices: document.getElementById("chkServices"),
-  servicesBody: document.getElementById("servicesBody"),
-  sMonths: document.getElementById("sMonths"),
-  servicesChecklist: document.getElementById("servicesChecklist"),
-  serviceMonthsOut: document.getElementById("serviceMonthsOut"),
-  servicesPriceOut: document.getElementById("servicesPriceOut"),
-  servicePillPrice: document.getElementById("servicePillPrice"),
-
-  // Notes & file
-  notes: document.getElementById("iNotes"),
-  file: document.getElementById("iFile"),
-
-  // Summary & Checkout
-  cartList: document.getElementById("cartItemsList"),
-  grandTotalOut: document.getElementById("grandTotalOut"),
-  btnPayAmount: document.getElementById("btnPayAmount"),
-  payNowBtn: document.getElementById("payNowBtn"),
-  orderMsg: document.getElementById("orderMsg"),
-
-  // Modal
-  modalOverlay: document.getElementById("payModalOverlay"),
-  closeModalBtn: document.getElementById("closeModalBtn"),
-  modalAmountOut: document.getElementById("modalAmountOut"),
-  modalUpiOut: document.getElementById("modalUpiOut"),
-  modalQrWrap: document.getElementById("modalQrWrap"),
-  modalUpiBtn: document.getElementById("modalUpiBtn"),
-  modalCopyUpiBtn: document.getElementById("modalCopyUpiBtn")
+let liveSettings = {
+  domain_base_price: 599,
+  domain_prices: {
+    in: 599,
+    com: 999,
+    org: 899,
+    co_in: 499,
+    edu_in: 1199
+  },
+  ai_paper_rate: 500,
+  ai_paper_count_text: '50–60 papers',
+  monthly_upkeep_rate: 500,
+  ai_trial_enabled: true,
+  ai_trial_price: 0,
+  ai_trial_papers: '5 test question papers'
 };
 
-/* ─── Initialization ─── */
-async function init() {
-  CONFIG = await loadConfig();
+const byId = id => document.getElementById(id);
+const check = id => Boolean(byId(id)?.checked);
 
-  // Populate hero indicators
-  const domainPrices = Object.values(CONFIG.domainPrices || { in: 599 });
-  const cheapestDomain = Math.min(...domainPrices);
-  document.getElementById("heroDomainFrom").textContent = money(cheapestDomain);
-  document.getElementById("heroPaperRate").textContent = money(CONFIG.paperGen?.pricePerBundle || 500);
-  document.getElementById("heroPaperRange").textContent = `${CONFIG.paperGen?.papersMin || 50}–${CONFIG.paperGen?.papersMax || 60} papers`;
-  document.getElementById("heroServiceRate").textContent = money(CONFIG.monthlyRate || 500);
-
-  // Populate domain extension dropdown
-  el.dExt.innerHTML = Object.entries(CONFIG.domainPrices).map(([ext, price]) =>
-    `<option value="${ext}">.${ext} — ${money(price)}</option>`
-  ).join("");
-  el.domainPillPrice.textContent = `from ${money(cheapestDomain)}`;
-
-  // Populate paper hint
-  const pRate = CONFIG.paperGen || { pricePerBundle: 500, papersMin: 50, papersMax: 60 };
-  el.paperRateHint.textContent = `Rate: ${money(pRate.pricePerBundle)} = ${pRate.papersMin}–${pRate.papersMax} papers`;
-  el.paperPillPrice.textContent = `${money(pRate.pricePerBundle)} / ${pRate.papersMin}–${pRate.papersMax} papers`;
-
-  // Populate services checklist
-  el.servicesChecklist.innerHTML = (CONFIG.services || []).map((s, idx) => `
-    <label class="check-item">
-      <input type="checkbox" value="${s.key}" data-label="${s.label}" ${idx < 4 ? "checked" : ""}>
-      <span>${s.label}</span>
-    </label>
-  `).join("");
-  el.servicePillPrice.textContent = `${money(CONFIG.monthlyRate || 500)}/month`;
-
-  // Populate months dropdown with live pricing
-  const mRate = CONFIG.monthlyRate || 500;
-  el.sMonths.innerHTML = [1, 2, 3, 6, 12].map(m => `
-    <option value="${m}" ${m === 3 ? "selected" : ""}>${m} ${m === 1 ? "month" : "months"} (${money(mRate * m)})</option>
-  `).join("");
-
-  // Restore saved school session info if available
+async function initHome() {
   try {
-    const saved = JSON.parse(sessionStorage.getItem("paperera_school_info") || "{}");
-    if (saved.school) el.school.value = saved.school;
-    if (saved.place) el.place.value = saved.place;
-    if (saved.contact) el.contact.value = saved.contact;
-    if (saved.person) el.person.value = saved.person;
-    if (saved.email) el.email.value = saved.email;
-  } catch (e) {}
+    const s = await getPublicSettings();
+    if (s) {
+      liveSettings = {
+        ...liveSettings,
+        ...s,
+        domain_prices: {
+          ...liveSettings.domain_prices,
+          ...(s.domain_prices || {})
+        }
+      };
+    }
+  } catch (err) {
+    console.warn('Using default settings fallback:', err);
+  }
 
-  // Event Listeners
-  attachListeners();
+  // Update Hero Section
+  const minDomainPrice = liveSettings.domain_prices?.in || liveSettings.domain_base_price || 599;
+  if (byId('heroDomainFrom')) byId('heroDomainFrom').textContent = money(minDomainPrice);
+  if (byId('heroPaperRate')) byId('heroPaperRate').textContent = money(liveSettings.ai_paper_rate);
+  if (byId('heroPaperRange')) byId('heroPaperRange').textContent = liveSettings.ai_paper_count_text;
+  if (byId('heroServiceRate')) byId('heroServiceRate').textContent = money(liveSettings.monthly_upkeep_rate);
 
-  // Initial calculation
-  recalculateOrder();
+  // Update Domain Section
+  if (byId('domainPillPrice')) byId('domainPillPrice').textContent = `from ${money(minDomainPrice)}`;
+  populateDomainExtensions();
+
+  // Update AI Trial Section
+  const trialBar = byId('trialToggleBar');
+  if (trialBar) {
+    if (!liveSettings.ai_trial_enabled) {
+      trialBar.style.display = 'none';
+      if (byId('trialBody')) byId('trialBody').style.display = 'none';
+    } else {
+      trialBar.style.display = 'flex';
+      const trialPill = byId('trialPillPrice');
+      if (trialPill) trialPill.textContent = liveSettings.ai_trial_price > 0 ? money(liveSettings.ai_trial_price) : 'Free Trial';
+      if (byId('trialDescOut')) byId('trialDescOut').textContent = `${liveSettings.ai_trial_papers} generated`;
+      if (byId('trialCostOut')) byId('trialCostOut').textContent = liveSettings.ai_trial_price > 0 ? money(liveSettings.ai_trial_price) : '₹0 (Free)';
+    }
+  }
+
+  // Update AI Full Bundle Section
+  if (byId('paperPillPrice')) byId('paperPillPrice').textContent = `${money(liveSettings.ai_paper_rate)} / ${liveSettings.ai_paper_count_text}`;
+  if (byId('paperRateHint')) byId('paperRateHint').textContent = `Rate: ${money(liveSettings.ai_paper_rate)} = ${liveSettings.ai_paper_count_text}`;
+  if (byId('pAmount')) {
+    byId('pAmount').min = liveSettings.ai_paper_rate;
+    byId('pAmount').step = liveSettings.ai_paper_rate;
+  }
+
+  // Update Monthly Upkeep Section
+  if (byId('servicePillPrice')) byId('servicePillPrice').textContent = `${money(liveSettings.monthly_upkeep_rate)}/month`;
+
+  setupEventListeners();
+  calculateOrder();
 }
 
-function attachListeners() {
-  // Service Toggles
-  el.chkDomain.addEventListener("change", () => {
-    el.domainBody.classList.toggle("disabled", !el.chkDomain.checked);
-    recalculateOrder();
-  });
-  document.getElementById("domainToggleBar").addEventListener("click", (e) => {
-    if (e.target.tagName !== "INPUT") {
-      el.chkDomain.checked = !el.chkDomain.checked;
-      el.chkDomain.dispatchEvent(new Event("change"));
+function populateDomainExtensions() {
+  const dExt = byId('dExt');
+  const domainChips = byId('domainChips');
+  const p = liveSettings.domain_prices || {};
+  
+  const list = [
+    { ext: '.in', label: '.in (Recommended for Indian Schools)', shortLabel: '.in', price: Number(p.in) || 599 },
+    { ext: '.com', label: '.com (Global Standard)', shortLabel: '.com', price: Number(p.com) || 999 },
+    { ext: '.org', label: '.org (Non-Profit / Trust)', shortLabel: '.org', price: Number(p.org) || 899 },
+    { ext: '.co.in', label: '.co.in (Commercial / Institutional)', shortLabel: '.co.in', price: Number(p.co_in) || 499 },
+    { ext: '.edu.in', label: '.edu.in (Verified Educational Institution)', shortLabel: '.edu.in', price: Number(p.edu_in) || 1199 }
+  ];
+
+  if (dExt) {
+    dExt.innerHTML = list.map(d => `<option value="${d.ext}" data-price="${d.price}">${d.label} — ${money(d.price)}</option>`).join('');
+  }
+
+  if (domainChips) {
+    domainChips.innerHTML = list.map((d, i) => `
+      <button type="button" class="preset-chip ${i === 0 ? 'active' : ''}" data-ext="${d.ext}" data-price="${d.price}">
+        <strong>${d.shortLabel}</strong> &nbsp;${money(d.price)}
+      </button>
+    `).join('');
+
+    domainChips.querySelectorAll('.preset-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        domainChips.querySelectorAll('.preset-chip').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (dExt) {
+          dExt.value = btn.dataset.ext;
+        }
+        calculateOrder();
+      });
+    });
+  }
+}
+
+function setupEventListeners() {
+  // Service toggle cards (Clicking anywhere on toggle bar or label)
+  const toggles = [
+    { bar: 'domainToggleBar', chk: 'chkDomain', body: 'domainBody', card: 'domainCard' },
+    { bar: 'trialToggleBar', chk: 'chkTrial', body: 'trialBody', card: 'paperCard' },
+    { bar: 'paperToggleBar', chk: 'chkPaper', body: 'paperBody', card: 'paperCard' },
+    { bar: 'serviceToggleBar', chk: 'chkServices', body: 'servicesBody', card: 'serviceCard' }
+  ];
+
+  toggles.forEach(t => {
+    const barEl = byId(t.bar);
+    const chkEl = byId(t.chk);
+    const bodyEl = byId(t.body);
+    const cardEl = byId(t.card);
+
+    function updateCardState() {
+      if (bodyEl) {
+        bodyEl.classList.toggle('disabled', !chkEl.checked);
+      }
+      if (cardEl) {
+        if (t.card === 'domainCard') {
+          cardEl.classList.toggle('service-selected', check('chkDomain'));
+        } else if (t.card === 'paperCard') {
+          cardEl.classList.toggle('service-selected', check('chkTrial') || check('chkPaper'));
+        } else if (t.card === 'serviceCard') {
+          cardEl.classList.toggle('service-selected', check('chkServices'));
+        }
+      }
+      calculateOrder();
+    }
+
+    if (chkEl) {
+      chkEl.addEventListener('change', updateCardState);
+    }
+
+    if (barEl) {
+      barEl.addEventListener('click', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') return;
+        if (chkEl) {
+          chkEl.checked = !chkEl.checked;
+          updateCardState();
+        }
+      });
     }
   });
 
-  el.chkPaper.addEventListener("change", () => {
-    el.paperBody.classList.toggle("disabled", !el.chkPaper.checked);
-    recalculateOrder();
+  // Dynamic domain changes
+  byId('dExt')?.addEventListener('change', (e) => {
+    const val = e.target.value;
+    const chips = byId('domainChips');
+    if (chips) {
+      chips.querySelectorAll('.preset-chip').forEach(b => {
+        b.classList.toggle('active', b.dataset.ext === val);
+      });
+    }
+    calculateOrder();
   });
-  document.getElementById("paperToggleBar").addEventListener("click", (e) => {
-    if (e.target.tagName !== "INPUT") {
-      el.chkPaper.checked = !el.chkPaper.checked;
-      el.chkPaper.dispatchEvent(new Event("change"));
+
+  byId('dWanted')?.addEventListener('input', calculateOrder);
+
+  // AI Paper Presets & Steppers
+  const paperPresets = byId('paperPresets');
+  if (paperPresets) {
+    paperPresets.querySelectorAll('.preset-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        paperPresets.querySelectorAll('.preset-chip').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const amt = Number(btn.dataset.amount) || liveSettings.ai_paper_rate;
+        if (byId('pAmount')) byId('pAmount').value = amt;
+        calculateOrder();
+      });
+    });
+  }
+
+  byId('pAmount')?.addEventListener('input', () => {
+    const val = Number(byId('pAmount').value);
+    const paperPresets = byId('paperPresets');
+    if (paperPresets) {
+      paperPresets.querySelectorAll('.preset-chip').forEach(b => {
+        b.classList.toggle('active', Number(b.dataset.amount) === val);
+      });
+    }
+    calculateOrder();
+  });
+
+  byId('btnPaperMinus')?.addEventListener('click', () => {
+    const pInput = byId('pAmount');
+    if (!pInput) return;
+    const step = Number(liveSettings.ai_paper_rate) || 500;
+    const current = Number(pInput.value) || step;
+    if (current > step) {
+      pInput.value = current - step;
+      pInput.dispatchEvent(new Event('input'));
     }
   });
 
-  el.chkServices.addEventListener("change", () => {
-    el.servicesBody.classList.toggle("disabled", !el.chkServices.checked);
-    recalculateOrder();
+  byId('btnPaperPlus')?.addEventListener('click', () => {
+    const pInput = byId('pAmount');
+    if (!pInput) return;
+    const step = Number(liveSettings.ai_paper_rate) || 500;
+    const current = Number(pInput.value) || step;
+    pInput.value = current + step;
+    pInput.dispatchEvent(new Event('input'));
   });
-  document.getElementById("serviceToggleBar").addEventListener("click", (e) => {
-    if (e.target.tagName !== "INPUT") {
-      el.chkServices.checked = !el.chkServices.checked;
-      el.chkServices.dispatchEvent(new Event("change"));
+
+  // Duration Presets & Steppers (Section 04)
+  const durationChips = byId('durationChips');
+  if (durationChips) {
+    durationChips.querySelectorAll('.preset-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        durationChips.querySelectorAll('.preset-chip').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const months = Number(btn.dataset.months) || 1;
+        if (byId('sMonths')) byId('sMonths').value = months;
+        calculateOrder();
+      });
+    });
+  }
+
+  byId('sMonths')?.addEventListener('input', () => {
+    const val = Number(byId('sMonths').value);
+    const durationChips = byId('durationChips');
+    if (durationChips) {
+      durationChips.querySelectorAll('.preset-chip').forEach(b => {
+        b.classList.toggle('active', Number(b.dataset.months) === val);
+      });
+    }
+    calculateOrder();
+  });
+
+  byId('btnMonthMinus')?.addEventListener('click', () => {
+    const mInput = byId('sMonths');
+    if (!mInput) return;
+    const current = Number(mInput.value) || 1;
+    if (current > 1) {
+      mInput.value = current - 1;
+      mInput.dispatchEvent(new Event('input'));
     }
   });
 
-  // Inputs change
-  el.dExt.addEventListener("change", recalculateOrder);
-  el.dWanted.addEventListener("input", recalculateOrder);
-  el.school.addEventListener("input", () => {
-    saveSchoolSession();
-    if (!el.dWanted.value) recalculateOrder();
+  byId('btnMonthPlus')?.addEventListener('click', () => {
+    const mInput = byId('sMonths');
+    if (!mInput) return;
+    const current = Number(mInput.value) || 1;
+    if (current < 60) {
+      mInput.value = current + 1;
+      mInput.dispatchEvent(new Event('input'));
+    }
   });
-  el.place.addEventListener("input", saveSchoolSession);
-  el.contact.addEventListener("input", saveSchoolSession);
-  if (el.person) el.person.addEventListener("input", saveSchoolSession);
-  if (el.email) el.email.addEventListener("input", saveSchoolSession);
 
-  el.pAmount.addEventListener("input", recalculateOrder);
-  el.sMonths.addEventListener("change", recalculateOrder);
-  el.servicesChecklist.addEventListener("change", recalculateOrder);
+  // Website / School Branches Steppers
+  byId('sSites')?.addEventListener('input', calculateOrder);
 
-  // Pay button
-  el.payNowBtn.addEventListener("click", handleProceedToPay);
-
-  // Modal
-  el.closeModalBtn.addEventListener("click", () => {
-    el.modalOverlay.classList.remove("open");
+  byId('btnSiteMinus')?.addEventListener('click', () => {
+    const sInput = byId('sSites');
+    if (!sInput) return;
+    const current = Number(sInput.value) || 1;
+    if (current > 1) {
+      sInput.value = current - 1;
+      calculateOrder();
+    }
   });
-  el.modalOverlay.addEventListener("click", (e) => {
-    if (e.target === el.modalOverlay) el.modalOverlay.classList.remove("open");
+
+  byId('btnSitePlus')?.addEventListener('click', () => {
+    const sInput = byId('sSites');
+    if (!sInput) return;
+    const current = Number(sInput.value) || 1;
+    if (current < 20) {
+      sInput.value = current + 1;
+      calculateOrder();
+    }
+  });
+
+  // Order submission
+  byId('payNowBtn')?.addEventListener('click', handleOrderSubmission);
+
+  // Payment modal close
+  byId('closeModalBtn')?.addEventListener('click', () => {
+    byId('payModalOverlay')?.classList.remove('open');
   });
 }
 
-function saveSchoolSession() {
-  try {
-    const info = {
-      school: el.school.value.trim(),
-      place: el.place.value.trim(),
-      contact: el.contact.value.trim(),
-      person: el.person ? el.person.value.trim() : "",
-      email: el.email ? el.email.value.trim() : ""
-    };
-    sessionStorage.setItem("paperera_school_info", JSON.stringify(info));
-  } catch (e) {}
-}
-
-/* ─── Order Recalculation ─── */
-function getSelectedItems() {
+function calculateOrder() {
   const items = [];
+  let grandTotal = 0;
 
   // 1. Domain
-  if (el.chkDomain.checked) {
-    const ext = el.dExt.value;
-    const price = Number(CONFIG.domainPrices[ext]) || 599;
-    const schoolBase = el.school.value.trim().toLowerCase().replace(/[^a-z0-9]/g, "") || "yourschool";
-    const customName = el.dWanted.value.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
-    const domainFull = (customName || schoolBase) + "." + ext;
+  if (check('chkDomain')) {
+    const extEl = byId('dExt');
+    const selectedOpt = extEl?.options[extEl.selectedIndex];
+    const price = Number(selectedOpt?.dataset.price) || liveSettings.domain_base_price || 599;
+    const rawName = byId('dWanted')?.value.trim() || 'schoolname';
+    const cleanName = rawName.toLowerCase().replace(/[^a-z0-9-]/g, '') + (extEl?.value || '.in');
+    
+    if (byId('domainNameOut')) byId('domainNameOut').textContent = cleanName;
+    if (byId('domainPriceOut')) byId('domainPriceOut').textContent = money(price);
 
-    el.domainNameOut.textContent = domainFull;
-    el.domainPriceOut.textContent = money(price);
-
-    items.push({
-      key: "domain",
-      type: "domain",
-      label: `Domain Registration (${domainFull})`,
-      price: price,
-      details: { ext, domainName: domainFull }
-    });
+    items.push({ name: `Custom Domain Registration (${cleanName})`, price });
+    grandTotal += price;
   }
 
-  // 2. AI Papers
-  if (el.chkPaper.checked) {
-    const amt = Math.max(500, Number(el.pAmount.value) || 500);
-    const pRate = CONFIG.paperGen || { pricePerBundle: 500, papersMin: 50, papersMax: 60 };
-    const bundles = amt / pRate.pricePerBundle;
-    const minP = Math.floor(bundles * pRate.papersMin);
-    const maxP = Math.floor(bundles * pRate.papersMax);
-
-    el.paperAmtOut.textContent = money(amt);
-    el.paperCountOut.textContent = `${minP}–${maxP} papers`;
-
-    items.push({
-      key: "paper",
-      type: "paper",
-      label: `AI Question Papers (${minP}–${maxP} papers bundle)`,
-      price: amt,
-      details: { amount: amt, papersMin: minP, papersMax: maxP }
-    });
+  // 2. AI Trial
+  if (check('chkTrial') && liveSettings.ai_trial_enabled) {
+    const trialPrice = Number(liveSettings.ai_trial_price) || 0;
+    items.push({ name: `AI Question Papers Trial (${liveSettings.ai_trial_papers})`, price: trialPrice });
+    grandTotal += trialPrice;
   }
 
-  // 3. Monthly Services
-  if (el.chkServices.checked) {
-    const months = Number(el.sMonths.value) || 1;
-    const mRate = Number(CONFIG.monthlyRate) || 500;
-    const totalPrice = mRate * months;
+  // 3. AI Paper Bundle
+  if (check('chkPaper')) {
+    const baseRate = Number(liveSettings.ai_paper_rate) || 500;
+    const amt = Math.max(Number(byId('pAmount')?.value) || baseRate, baseRate);
+    const multiple = amt / baseRate;
+    const countRange = `${Math.round(50 * multiple)}–${Math.round(60 * multiple)} papers`;
 
-    const checkedBoxes = Array.from(el.servicesChecklist.querySelectorAll("input[type=checkbox]:checked"));
-    const selectedLabels = checkedBoxes.map(chk => chk.dataset.label);
+    if (byId('paperAmtOut')) byId('paperAmtOut').textContent = money(amt);
+    if (byId('paperCountOut')) byId('paperCountOut').textContent = countRange;
 
-    el.serviceMonthsOut.textContent = `${months} ${months === 1 ? "month" : "months"}`;
-    el.servicesPriceOut.textContent = money(totalPrice);
-
-    items.push({
-      key: "service",
-      type: "service",
-      label: `Website Upkeep (${months} mo) — ${selectedLabels.length} feature(s)`,
-      price: totalPrice,
-      details: { months, ratePerMonth: mRate, services: selectedLabels }
-    });
+    items.push({ name: `AI Papers Bundle (~${countRange})`, price: amt });
+    grandTotal += amt;
   }
 
-  return items;
+  // 4. Monthly Upkeep (Months * Monthly Rate * Sites)
+  if (check('chkServices')) {
+    const months = Math.max(Number(byId('sMonths')?.value) || 1, 1);
+    const sites = Math.max(Number(byId('sSites')?.value) || 1, 1);
+    const monthlyRate = Number(liveSettings.monthly_upkeep_rate) || 500;
+    const price = months * monthlyRate * sites;
+
+    if (byId('serviceMonthsOut')) byId('serviceMonthsOut').textContent = `${months} month${months > 1 ? 's' : ''}`;
+    if (byId('serviceSitesOut')) byId('serviceSitesOut').textContent = `${sites} website${sites > 1 ? 's' : ''}`;
+    if (byId('servicesPriceOut')) byId('servicesPriceOut').textContent = money(price);
+
+    items.push({ name: `Website Upkeep & Management (${months} mo × ${sites} site${sites > 1 ? 's' : ''})`, price });
+    grandTotal += price;
+  }
+
+  // Render Order Summary List
+  const cartList = byId('cartItemsList');
+  if (cartList) {
+    if (!items.length) {
+      cartList.innerHTML = `<li class="empty">No services selected yet. Check items above to build your order.</li>`;
+    } else {
+      cartList.innerHTML = items.map(item => `
+        <li>
+          <span>${item.name}</span>
+          <strong>${item.price > 0 ? money(item.price) : 'FREE'}</strong>
+        </li>
+      `).join('');
+    }
+  }
+
+  if (byId('grandTotalOut')) byId('grandTotalOut').textContent = money(grandTotal);
+  if (byId('btnPayAmount')) byId('btnPayAmount').textContent = money(grandTotal);
+
+  return { items, grandTotal };
 }
 
-function recalculateOrder() {
-  const items = getSelectedItems();
-  const total = items.reduce((sum, item) => sum + item.price, 0);
+async function handleOrderSubmission() {
+  const school = byId('mainSchool')?.value.trim();
+  const phone = byId('mainContact')?.value.trim();
+  const msg = byId('orderMsg');
 
-  // Render Cart List
-  if (items.length === 0) {
-    el.cartList.innerHTML = '<li class="empty">No services selected yet. Check items above to build your order.</li>';
-  } else {
-    el.cartList.innerHTML = items.map(i => `
-      <li>
-        <span>${i.label}</span>
-        <strong style="font-family:'IBM Plex Mono',monospace;color:var(--gold);">${money(i.price)}</strong>
-      </li>
-    `).join("");
-  }
-
-  el.grandTotalOut.textContent = money(total);
-  el.btnPayAmount.textContent = money(total);
-}
-
-/* ─── Proceed to Pay & Auto-Save ─── */
-async function handleProceedToPay() {
-  const school = el.school.value.trim();
-  const place = el.place.value.trim();
-  const contact = el.contact.value.trim();
-  const person = el.person ? el.person.value.trim() : "";
-  const email = el.email ? el.email.value.trim() : "";
-  const notes = el.notes ? el.notes.value.trim() : "";
-
-  // 1. Validation
-  if (!school) {
-    flashMessage(el.orderMsg, "Please enter your School Name in section 01 above.", false);
-    el.school.focus();
-    return;
-  }
-  if (!place) {
-    flashMessage(el.orderMsg, "Please enter your Place / City in section 01 above.", false);
-    el.place.focus();
-    return;
-  }
-  if (!contact || contact.length < 8) {
-    flashMessage(el.orderMsg, "Please enter a valid 10-digit mobile number.", false);
-    el.contact.focus();
-    return;
-  }
-
-  const items = getSelectedItems();
-  const total = items.reduce((sum, item) => sum + item.price, 0);
-
-  if (items.length === 0 && !notes && !el.file.files[0]) {
-    flashMessage(el.orderMsg, "Please select at least one service above to proceed.", false);
-    return;
-  }
-
-  // Handle optional file
-  let fileName = "";
-  let fileData = "";
-  if (el.file && el.file.files[0]) {
-    const f = el.file.files[0];
-    if (f.size > 3 * 1024 * 1024) {
-      flashMessage(el.orderMsg, "Attached file is over 3 MB. Please share it via WhatsApp after submitting.", false);
-      return;
+  if (!school || !phone) {
+    if (msg) {
+      msg.textContent = 'Please enter your School Name and Contact Mobile Number in Section 01.';
+      msg.className = 'msg show err';
     }
-    fileName = f.name;
-    try {
-      fileData = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(f);
-      });
-    } catch (e) {}
+    byId('school-info')?.scrollIntoView({ behavior: 'smooth' });
+    return;
   }
 
-  // Build combined order payload
-  const orderPayload = {
-    type: "payment",
-    school,
-    place,
-    contact,
-    amount: total,
-    status: "pending",
-    details: {
-      person,
-      email,
-      notes,
-      fileName,
-      fileData,
-      items: items.map(i => ({ label: i.label, price: i.price, details: i.details }))
+  const { items, grandTotal } = calculateOrder();
+  if (!items.length) {
+    if (msg) {
+      msg.textContent = 'Please select at least one service or take the AI trial above.';
+      msg.className = 'msg show err';
     }
-  };
-
-  el.payNowBtn.disabled = true;
-  el.payNowBtn.textContent = "Registering Order…";
+    return;
+  }
 
   try {
-    // Automatically save to Supabase + localStorage
-    const savedOrder = await addOrder(orderPayload);
+    byId('payNowBtn').disabled = true;
+    if (msg) {
+      msg.textContent = 'Submitting order...';
+      msg.className = 'msg show';
+    }
 
-    flashMessage(el.orderMsg, "✓ Order registered! Opening payment drawer…", true);
+    const isTrial = check('chkTrial');
+    const selectedServiceNames = items.map(i => i.name);
 
-    // Open Payment Modal
-    openPaymentModal(total, savedOrder);
-  } catch (err) {
-    flashMessage(el.orderMsg, "Could not submit to server. Please check internet connection.", false);
-  } finally {
-    el.payNowBtn.disabled = false;
-    el.payNowBtn.textContent = `⚡ Proceed to Pay & Confirm Order (${money(total)}) →`;
-  }
-}
+    await submitInquiry({
+      school_name: school,
+      city: byId('mainPlace')?.value.trim() || '',
+      contact_name: byId('mainPerson')?.value.trim() || '',
+      contact_phone: phone,
+      contact_email: byId('mainEmail')?.value.trim() || '',
+      requested_services: selectedServiceNames,
+      total_amount: grandTotal,
+      is_trial: isTrial,
+      notes: byId('iNotes')?.value.trim() || ''
+    });
 
-/* ─── Open Payment Modal ─── */
-function openPaymentModal(total, order) {
-  el.modalAmountOut.textContent = money(total);
+    if (msg) {
+      msg.textContent = '✓ Order registered successfully! Our site desk will confirm your setup.';
+      msg.className = 'msg show ok';
+    }
 
-  const upiId = (CONFIG && CONFIG.upiId) ? CONFIG.upiId.trim() : "";
-  const payee = (CONFIG && CONFIG.payeeName) || "Paperera";
-  const note = `Paperera Order ${order?.id || ""}`.trim();
-
-  if (upiId) {
-    el.modalUpiOut.textContent = "UPI ID: " + upiId;
-    el.modalCopyUpiBtn.style.display = "inline-flex";
-    el.modalCopyUpiBtn.onclick = async () => {
-      try {
-        await navigator.clipboard.writeText(upiId);
-        el.modalCopyUpiBtn.textContent = "Copied UPI ID ✓";
-        setTimeout(() => { el.modalCopyUpiBtn.textContent = "📋 Copy UPI ID"; }, 2500);
-      } catch (e) {
-        prompt("Copy UPI ID:", upiId);
+    // Show Payment Modal
+    const modal = byId('payModalOverlay');
+    if (modal) {
+      byId('modalAmountOut').textContent = money(grandTotal);
+      const upiId = 'paperera@upi';
+      const upiLink = `upi://pay?pa=${upiId}&pn=PapereraDesk&am=${grandTotal}&cu=INR&tn=Paperera_${encodeURIComponent(school.slice(0, 15))}`;
+      
+      if (byId('modalUpiOut')) byId('modalUpiOut').textContent = `UPI: ${upiId}`;
+      if (byId('modalUpiBtn')) byId('modalUpiBtn').href = upiLink;
+      
+      const qrWrap = byId('modalQrWrap');
+      if (qrWrap) {
+        qrWrap.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}" alt="Scan to pay via UPI">`;
       }
-    };
-  } else {
-    el.modalUpiOut.textContent = "UPI ID configured in Admin Panel";
-    el.modalCopyUpiBtn.style.display = "none";
-  }
 
-  // QR Code Rendering
-  if (CONFIG && CONFIG.qrImage) {
-    el.modalQrWrap.innerHTML = `<img src="${CONFIG.qrImage}" alt="Payment QR code">`;
-  } else if (upiId && total > 0) {
-    const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payee)}&am=${total}&cu=INR&tn=${encodeURIComponent(note)}`;
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(upiLink)}`;
-    el.modalQrWrap.innerHTML = `<img src="${qrUrl}" alt="Scan to pay ${money(total)}">`;
-  } else {
-    el.modalQrWrap.innerHTML = '<p class="hint">QR code ready. You can also pay via phone transfer.</p>';
-  }
+      modal.classList.add('open');
+    }
 
-  // Direct UPI App Link
-  if (upiId && total > 0) {
-    const upiUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payee)}&am=${total}&cu=INR&tn=${encodeURIComponent(note)}`;
-    el.modalUpiBtn.href = upiUri;
-    el.modalUpiBtn.style.display = "inline-flex";
-  } else {
-    el.modalUpiBtn.href = "#";
-    el.modalUpiBtn.onclick = (e) => {
-      e.preventDefault();
-      alert("Order is registered! Admin will contact you on your registered mobile number.");
-    };
+  } catch (err) {
+    if (msg) {
+      msg.textContent = 'Error: ' + err.message;
+      msg.className = 'msg show err';
+    }
+  } finally {
+    byId('payNowBtn').disabled = false;
   }
-
-  el.modalOverlay.classList.add("open");
 }
 
-/* ─── Helper: Flash notification ─── */
-function flashMessage(elem, text, isOk) {
-  if (!elem) return;
-  elem.textContent = text;
-  elem.className = "msg show " + (isOk ? "ok" : "err");
-  setTimeout(() => elem.classList.remove("show"), 6000);
+// Copy UPI ID button in modal
+byId('modalCopyUpiBtn')?.addEventListener('click', () => {
+  navigator.clipboard.writeText('paperera@upi').then(() => {
+    alert('UPI ID (paperera@upi) copied to clipboard!');
+  }).catch(() => {
+    prompt('Copy UPI ID:', 'paperera@upi');
+  });
+});
+
+// Initialize on DOM ready or immediately if already loaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initHome);
+} else {
+  initHome();
 }
 
-// Start app
-init();
+

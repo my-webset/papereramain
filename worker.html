@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Paperera | Worker Workspace</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="worker">
+  <!-- LOGIN VIEW -->
+  <main class="login-wrap" id="loginWrap">
+    <section class="login-card">
+      <div class="login-logo"><span class="logo-mark">p<span>.</span></span></div>
+      <h1>Worker Workspace</h1>
+      <p>Sign in with your Worker ID and password assigned by your administrator.</p>
+      <div class="field">
+        <label for="workerCode">Worker ID</label>
+        <input id="workerCode" placeholder="e.g. WKR-101" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" required>
+      </div>
+      <button class="gold" id="loginBtn" style="width:100%;">Open Workspace</button>
+      <div class="msg" id="loginMsg" role="alert"></div>
+    </section>
+  </main>
+
+  <!-- WORKER SHELL -->
+  <main class="worker-shell" id="workerShell">
+    <header class="worker-top">
+      <div class="brand-area">
+        <span class="logo-mark">p<span>.</span></span>
+        <span class="sub" id="workerIdentity">Worker Workspace</span>
+      </div>
+      <div class="actions">
+        <button id="refreshBtn">Refresh data</button>
+        <button id="logoutBtn">Log out</button>
+      </div>
+    </header>
+
+    <div class="worker-panel">
+      <!-- STATS & TARGETS -->
+      <section>
+        <div class="stat-grid">
+          <div class="stat-card highlight">
+            <div class="label">Your Total Paid Earnings</div>
+            <div class="value" id="statEarned">₹0</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Awaiting Client Payment</div>
+            <div class="value" id="statAwaiting">₹0</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Today's Target</div>
+            <div class="value" id="statTodayTarget" style="font-size:1.35rem;">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Weekly Target</div>
+            <div class="value" id="statWeekTarget" style="font-size:1.35rem;">—</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="worker-grid" style="margin-top:24px;">
+        <!-- SUBMIT SCHOOL LEAD FORM -->
+        <section class="card highlight-card">
+          <div class="block-head" style="margin-bottom:16px;">
+            <span class="no">Lead Desk</span>
+            <h2 style="font-size:1.25rem;">Submit New School Lead</h2>
+            <p>Send a school name and contact to register it under your Worker ID.</p>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="leadSchool">School Name <span class="req">*</span></label>
+              <input id="leadSchool" placeholder="e.g. Delhi Public School" required>
+            </div>
+            <div class="field">
+              <label for="leadCity">City / Location</label>
+              <input id="leadCity" placeholder="e.g. Jaipur, Rajasthan">
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="leadContactName">Contact Person Name</label>
+              <input id="leadContactName" placeholder="e.g. Principal / Vice Principal">
+            </div>
+            <div class="field">
+              <label for="leadPhone">Contact Mobile Number <span class="req">*</span></label>
+              <input id="leadPhone" type="tel" placeholder="10-digit mobile number" required>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="leadEmail">Contact Email (Optional)</label>
+              <input id="leadEmail" type="email" placeholder="school@example.com">
+            </div>
+            <div class="field">
+              <label for="leadService">Service Interested In</label>
+              <select id="leadService">
+                <option value="basic_site">Basic Website Upkeep &amp; Management</option>
+                <option value="ai_papers">AI Question Paper Generation</option>
+                <option value="both">Both (Website Upkeep + AI Papers)</option>
+                <option value="domain">Custom Domain Registration</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="leadNotes">Notes / Conversation Summary</label>
+            <textarea id="leadNotes" placeholder="e.g. Spoke to principal, interested in 50 AI paper bundle for upcoming exams..."></textarea>
+          </div>
+
+          <button class="gold" id="submitLeadBtn" style="width:100%;">
+            📤 Send School Lead to Admin
+          </button>
+          <div class="msg" id="leadMsg" role="alert"></div>
+        </section>
+
+        <!-- TARGETS & EARNINGS BREAKDOWN CARD -->
+        <section class="card">
+          <div class="block-head" style="margin-bottom:16px;">
+            <span class="no">Performance</span>
+            <h2 style="font-size:1.25rem;">Target Briefing &amp; Earnings</h2>
+            <p>Admin-assigned daily &amp; weekly targets and paid closes breakdown.</p>
+          </div>
+
+          <div style="background:var(--paper); padding:16px; border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px;">
+            <h4 style="margin:0 0 8px; font-size:0.92rem;">🎯 Targets Assigned by Admin</h4>
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.9rem;">
+              <span>Today's Target:</span>
+              <strong id="cardTodayTarget">Not set</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.9rem;">
+              <span>Weekly Target:</span>
+              <strong id="cardWeekTarget">Not set</strong>
+            </div>
+            <div id="targetNoteBox" style="font-size:0.82rem; color:var(--ink-soft); font-style:italic; border-top:1px dashed var(--line); padding-top:6px; margin-top:6px; display:none;"></div>
+          </div>
+
+          <div>
+            <h4 style="margin:0 0 10px; font-size:0.92rem;">💵 Commission Rates &amp; Paid Closes</h4>
+            <ul style="list-style:none; padding:0; margin:0; font-size:0.88rem; display:flex; flex-direction:column; gap:8px;">
+              <li style="display:flex; justify-content:space-between; border-bottom:1px solid var(--line); padding-bottom:6px;">
+                <span>Website Upkeep Closes (<span id="countBasicSite">0</span> paid)</span>
+                <strong id="commBasicRate">₹100 / close</strong>
+              </li>
+              <li style="display:flex; justify-content:space-between; border-bottom:1px solid var(--line); padding-bottom:6px;">
+                <span>AI Paper Gen Closes (<span id="countAiPapers">0</span> paid)</span>
+                <strong id="commAiRate">₹150 / close</strong>
+              </li>
+              <li style="display:flex; justify-content:space-between; border-bottom:1px solid var(--line); padding-bottom:6px;">
+                <span>Full Suite Closes (<span id="countBoth">0</span> paid)</span>
+                <strong id="commBothRate">₹250 / close</strong>
+              </li>
+            </ul>
+            <p style="font-size:0.78rem; color:var(--ink-mute); margin-top:12px; margin-bottom:0;">
+              * Note: Your earnings are credited automatically when Admin marks the client payment as <strong>Paid</strong>. If payment is unpaid, no commission is released.
+            </p>
+          </div>
+        </section>
+      </div>
+
+      <!-- MY SUBMITTED LEADS & PAYMENT STATUS -->
+      <section class="card" style="margin-top:24px;">
+        <div class="block-head" style="margin-bottom:16px;">
+          <span class="no">Registry</span>
+          <h2>My Submitted Schools &amp; Payment Status</h2>
+          <p>Track all school leads sent from your workspace. See real-time payment confirmation and commission releases.</p>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>School &amp; City</th>
+                <th>Contact Details</th>
+                <th>Service Interested</th>
+                <th>Date Submitted</th>
+                <th>Payment Status</th>
+                <th>Your Commission</th>
+              </tr>
+            </thead>
+            <tbody id="myLeadsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="storage.js"></script>
+  <script src="worker.js"></script>
+</body>
+</html>
