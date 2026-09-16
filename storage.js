@@ -7,12 +7,36 @@ let currentAdmin = null;
 let currentWorker = null;
 
 const cleanUrl = () => (PAPERERA.supabaseUrl || '').replace(/\/$/, '');
-const configured = () => cleanUrl() && PAPERERA.supabaseAnonKey && !PAPERERA.supabaseUrl.includes('YOUR_');
+const getConfigDiagnostics = () => {
+  const url = (PAPERERA.supabaseUrl || '').trim();
+  const anonKey = (PAPERERA.supabaseAnonKey || '').trim();
+  const missing = [];
+
+  if (!url) missing.push('supabaseUrl');
+  if (!anonKey) missing.push('supabaseAnonKey');
+
+  return {
+    url,
+    anonKeyPresent: Boolean(anonKey),
+    hasPlaceholder: url.includes('YOUR_') || url.includes('your_'),
+    missing
+  };
+};
+
+const configured = () => {
+  const d = getConfigDiagnostics();
+  return !!(d.url && d.anonKeyPresent && !d.hasPlaceholder);
+};
 const money = n => '₹' + (Number(n) || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 });
 
 async function rpc(functionName, params = {}) {
   if (!configured()) {
-    throw new Error('Supabase is not configured. Please check config.js.');
+    const d = getConfigDiagnostics();
+    console.error('Supabase config diagnostics:', d);
+    const detail = d.missing.length ? `Missing: ${d.missing.join(', ')}.` : '';
+    const placeholder = d.hasPlaceholder ? 'URL still contains a placeholder.' : '';
+    const message = `Supabase is not configured. Please check config.js. ${detail} ${placeholder}`.trim();
+    throw new Error(message);
   }
   const res = await fetch(`${cleanUrl()}/rest/v1/rpc/${functionName}`, {
     method: 'POST',
