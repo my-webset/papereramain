@@ -2,7 +2,10 @@
    All passwords are encrypted with pgcrypto on Supabase.
    No credentials or business records are cached in browser localStorage. */
 
-const PAPERERA = window.PAPERERA_CONFIG || {};
+const PAPERERA = window.PAPERERA_CONFIG || {
+  supabaseUrl: 'https://eiajcoohmgkqjvhkqdud.supabase.co',
+  supabaseAnonKey: 'sb_publishable_TEK_L-11CvV2PaOW-l19ng_x9v7CE4y'
+};
 let currentAdmin = null;
 let currentWorker = null;
 
