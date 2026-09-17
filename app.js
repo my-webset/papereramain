@@ -427,15 +427,16 @@ async function handleOrderSubmission() {
     const modal = byId('payModalOverlay');
     if (modal) {
       byId('modalAmountOut').textContent = money(grandTotal);
-      const upiId = 'paperera@upi';
-      const upiLink = `upi://pay?pa=${upiId}&pn=PapereraDesk&am=${grandTotal}&cu=INR&tn=Paperera_${encodeURIComponent(school.slice(0, 15))}`;
+      const upiId = '9979370684@fam';
+      const payerName = 'Jaisingh Kushwaha';
+      const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payerName)}&am=${grandTotal}&cu=INR&tn=Paperera_${encodeURIComponent(school.slice(0, 15))}`;
       
       if (byId('modalUpiOut')) byId('modalUpiOut').textContent = `UPI: ${upiId}`;
       if (byId('modalUpiBtn')) byId('modalUpiBtn').href = upiLink;
       
       const qrWrap = byId('modalQrWrap');
       if (qrWrap) {
-        qrWrap.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}" alt="Scan to pay via UPI">`;
+        qrWrap.innerHTML = `<img src="./share_image4113068545197211153.gif" alt="UPI QR code for ${payerName}" style="max-width:100%; height:auto; border-radius:12px; background:#fff;">`;
       }
 
       modal.classList.add('open');
@@ -453,10 +454,11 @@ async function handleOrderSubmission() {
 
 // Copy UPI ID button in modal
 byId('modalCopyUpiBtn')?.addEventListener('click', () => {
-  navigator.clipboard.writeText('paperera@upi').then(() => {
-    alert('UPI ID (paperera@upi) copied to clipboard!');
+  const upiId = '9979370684@fam';
+  navigator.clipboard.writeText(upiId).then(() => {
+    alert(`UPI ID (${upiId}) copied to clipboard!`);
   }).catch(() => {
-    prompt('Copy UPI ID:', 'paperera@upi');
+    prompt('Copy UPI ID:', upiId);
   });
 });
 
