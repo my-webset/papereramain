@@ -337,12 +337,15 @@ function calculateOrder() {
     grandTotal += amt;
   }
 
-  // 4. Monthly Upkeep (Months * Monthly Rate * Sites)
+  // 4. Monthly Upkeep (first two months at full rate, then half rate)
   if (check('chkServices')) {
     const months = Math.max(Number(byId('sMonths')?.value) || 1, 1);
     const sites = Math.max(Number(byId('sSites')?.value) || 1, 1);
     const monthlyRate = Number(liveSettings.monthly_upkeep_rate) || 500;
-    const price = months * monthlyRate * sites;
+    const fullRateMonths = Math.min(months, 2);
+    const discountedMonths = Math.max(months - 2, 0);
+    const pricePerSite = (fullRateMonths * monthlyRate) + (discountedMonths * monthlyRate / 2);
+    const price = pricePerSite * sites;
 
     if (byId('serviceMonthsOut')) byId('serviceMonthsOut').textContent = `${months} month${months > 1 ? 's' : ''}`;
     if (byId('serviceSitesOut')) byId('serviceSitesOut').textContent = `${sites} website${sites > 1 ? 's' : ''}`;
