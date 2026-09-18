@@ -858,6 +858,145 @@ body.admin, body.worker {
   color: var(--ink);
 }
 .badge.new { border-style: dotted; color: var(--ink-mute); border-color: var(--ink-mute); }
+
+/* ─── Worker workspace responsive layout ─── */
+body.worker {
+  overflow-x: hidden;
+}
+
+body.worker .worker-top {
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+body.worker .worker-top .brand-area {
+  min-width: 0;
+}
+
+body.worker .worker-top .sub {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+body.worker .worker-top .actions {
+  margin-left: auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+body.worker .worker-panel {
+  width: min(100%, 1280px);
+}
+
+body.worker .stat-card .value {
+  overflow-wrap: anywhere;
+}
+
+body.worker .table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+body.worker .table-wrap table {
+  min-width: 760px;
+}
+
+@media (max-width: 860px) {
+  body.worker .worker-panel {
+    padding: 24px 20px 56px;
+  }
+
+  body.worker .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  body.worker .worker-top {
+    align-items: flex-start;
+    padding: 14px 16px;
+  }
+
+  body.worker .worker-top .brand-area {
+    flex: 1 1 100%;
+  }
+
+  body.worker .worker-top .actions {
+    width: 100%;
+    margin-left: 0;
+    justify-content: stretch;
+  }
+
+  body.worker .worker-top .actions button {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  body.worker .worker-panel {
+    padding: 20px 14px 44px;
+  }
+
+  body.worker .stat-grid {
+    grid-template-columns: 1fr;
+    gap: 1px;
+    margin-bottom: 24px;
+  }
+
+  body.worker .stat-card {
+    padding: 16px 18px;
+  }
+
+  body.worker .card {
+    padding: 18px 16px;
+  }
+
+  body.worker .block-head {
+    display: block;
+  }
+
+  body.worker .block-head .no {
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+
+  body.worker .block-head h2 {
+    font-size: 1.3rem !important;
+  }
+
+  body.worker .worker-grid,
+  body.worker .worker-grid + .card {
+    margin-top: 18px !important;
+  }
+
+  body.worker .table-wrap {
+    margin-right: -2px;
+  }
+}
+
+@media (max-width: 420px) {
+  body.worker .worker-top .sub {
+    border-left: 0;
+    padding-left: 0;
+    flex-basis: 100%;
+  }
+
+  body.worker .worker-top .actions {
+    flex-direction: column;
+  }
+
+  body.worker .worker-top .actions button {
+    width: 100%;
+  }
+
+  body.worker .card {
+    padding: 16px 14px;
+  }
+
+  body.worker .stat-card .value {
+    font-size: 1.65rem;
+  }
+}
 .badge.handled, .badge.paid, .badge.closed { background: var(--ink); color: #fff; }
 .badge.pending, .badge.open { border-style: dashed; }
 
